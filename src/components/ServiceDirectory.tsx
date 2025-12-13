@@ -27,16 +27,13 @@ export function ServiceDirectory() {
 
   if (!services?.length && !searchTerm && !selectedMinistry && !selectedCategory) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
+      <div className="glass-card card-hover p-8 text-center">
         <div className="text-4xl mb-4">📋</div>
-        <h3 className="text-xl font-semibold mb-2">Service Directory</h3>
-        <p className="text-gray-600 mb-4">
-          Browse all available government services in Sierra Leone
+        <h3 className="text-xl font-bold tracking-tight mb-2">Service Directory</h3>
+        <p className="text-muted-foreground mb-4">
+          Browse available government services in Sierra Leone.
         </p>
-        <button
-          onClick={handleSeedData}
-          className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-        >
+        <button onClick={handleSeedData} className="btn-primary">
           Load Services
         </button>
       </div>
@@ -46,7 +43,7 @@ export function ServiceDirectory() {
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
-      <div className="bg-white rounded-lg shadow-sm border p-4">
+      <div className="glass-card card-hover p-4">
         <div className="space-y-4">
           <div>
             <input
@@ -54,15 +51,15 @@ export function ServiceDirectory() {
               placeholder="Search services..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+              className="input"
             />
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <select
               value={selectedMinistry}
               onChange={(e) => setSelectedMinistry(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+              className="select"
             >
               <option value="">All Ministries</option>
               {ministries?.map((ministry) => (
@@ -71,11 +68,11 @@ export function ServiceDirectory() {
                 </option>
               ))}
             </select>
-            
+
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+              className="select"
             >
               <option value="">All Categories</option>
               {categories?.map((category) => (
@@ -91,31 +88,29 @@ export function ServiceDirectory() {
       {/* Services List */}
       <div className="space-y-4">
         {services?.map((service) => (
-          <div key={service._id} className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start mb-4">
+          <div key={service._id} className="glass-card card-hover p-6">
+            <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start mb-4 gap-3">
               <div className="flex-1">
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  {service.name}
-                </h3>
+                <h3 className="text-xl font-bold tracking-tight mb-2">{service.name}</h3>
                 <div className="flex flex-wrap gap-2 mb-3">
-                  <span className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">
+                  <span className="pill text-emerald-800 dark:text-emerald-200 bg-emerald-400/15 dark:bg-emerald-400/10">
                     {service.ministry}
                   </span>
-                  <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+                  <span className="pill text-cyan-800 dark:text-cyan-200 bg-cyan-400/15 dark:bg-cyan-400/10">
                     {service.category}
                   </span>
                 </div>
-                <p className="text-gray-600 mb-4">{service.description}</p>
+                <p className="text-muted-foreground">{service.description}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Requirements</h4>
+                <h4 className="font-semibold mb-2">Requirements</h4>
                 <ul className="space-y-1">
                   {service.requirements.map((req, index) => (
-                    <li key={index} className="text-sm text-gray-600 flex items-start">
-                      <span className="text-green-600 mr-2">•</span>
+                    <li key={index} className="text-sm text-muted-foreground flex items-start">
+                      <span className="text-primary mr-2">•</span>
                       {req}
                     </li>
                   ))}
@@ -124,20 +119,20 @@ export function ServiceDirectory() {
 
               <div className="space-y-4">
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-1">Official Fees</h4>
-                  <p className="text-sm text-gray-600">{service.officialFees}</p>
+                  <h4 className="font-semibold mb-1">Official Fees</h4>
+                  <p className="text-sm text-muted-foreground">{service.officialFees}</p>
                 </div>
-                
+
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-1">Processing Time</h4>
-                  <p className="text-sm text-gray-600">{service.processingTime}</p>
+                  <h4 className="font-semibold mb-1">Processing Time</h4>
+                  <p className="text-sm text-muted-foreground">{service.processingTime}</p>
                 </div>
-                
+
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-1">Locations</h4>
+                  <h4 className="font-semibold mb-1">Locations</h4>
                   <ul className="space-y-1">
                     {service.locations.map((location, index) => (
-                      <li key={index} className="text-sm text-gray-600">
+                      <li key={index} className="text-sm text-muted-foreground">
                         📍 {location}
                       </li>
                     ))}
@@ -146,8 +141,8 @@ export function ServiceDirectory() {
 
                 {service.contactInfo && (
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-1">Contact</h4>
-                    <p className="text-sm text-gray-600">📞 {service.contactInfo}</p>
+                    <h4 className="font-semibold mb-1">Contact</h4>
+                    <p className="text-sm text-muted-foreground">📞 {service.contactInfo}</p>
                   </div>
                 )}
               </div>
@@ -157,12 +152,10 @@ export function ServiceDirectory() {
       </div>
 
       {services?.length === 0 && (searchTerm || selectedMinistry || selectedCategory) && (
-        <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
+        <div className="glass-card card-hover p-8 text-center">
           <div className="text-4xl mb-4">🔍</div>
-          <h3 className="text-xl font-semibold mb-2">No Services Found</h3>
-          <p className="text-gray-600">
-            Try adjusting your search criteria or filters
-          </p>
+          <h3 className="text-xl font-bold tracking-tight mb-2">No Services Found</h3>
+          <p className="text-muted-foreground">Try adjusting your search criteria or filters.</p>
         </div>
       )}
     </div>

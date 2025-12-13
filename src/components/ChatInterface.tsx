@@ -40,51 +40,55 @@ export function ChatInterface() {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border h-[600px] flex flex-col">
+    <div className="glass-card card-hover h-[600px] flex flex-col overflow-hidden">
       {/* Chat Header */}
-      <div className="p-4 border-b bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-t-lg">
-        <h3 className="font-semibold">Connect Salone AI Assistant</h3>
-        <p className="text-sm opacity-90">Ask me about government services, fees, requirements, and more!</p>
+      <div className="p-4 border-b border-white/20 dark:border-white/10 bg-gradient-to-r from-emerald-600/90 to-cyan-600/80 text-white">
+        <h3 className="font-semibold tracking-tight">Connect Salone AI Assistant</h3>
+        <p className="text-sm opacity-90">
+          Ask about requirements, fees, processing time, and where to go.
+        </p>
       </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {!chatHistory?.length && (
-          <div className="text-center text-gray-500 py-8">
+          <div className="text-center text-muted-foreground py-8">
             <div className="text-4xl mb-4">🤖</div>
-            <p className="text-lg font-medium mb-2">Welcome to Connect Salone AI!</p>
-            <p className="text-sm">Ask me anything about Sierra Leone government services:</p>
+            <p className="text-lg font-semibold text-foreground mb-2">
+              Welcome to Connect Salone AI!
+            </p>
+            <p className="text-sm">Try one of these:</p>
             <div className="mt-4 space-y-2 text-left max-w-md mx-auto">
-              <div className="bg-gray-50 p-3 rounded-lg text-sm">
-                "How do I apply for a passport?"
+              <div className="glass-surface rounded-xl p-3 text-sm">
+                “How do I apply for a passport?”
               </div>
-              <div className="bg-gray-50 p-3 rounded-lg text-sm">
-                "What are the fees for business registration?"
+              <div className="glass-surface rounded-xl p-3 text-sm">
+                “What are the fees for business registration?”
               </div>
-              <div className="bg-gray-50 p-3 rounded-lg text-sm">
-                "Where can I get a driver's license in Bo?"
+              <div className="glass-surface rounded-xl p-3 text-sm">
+                “Where can I get a driver’s license in Bo?”
               </div>
             </div>
           </div>
         )}
 
         {chatHistory?.map((chat, index) => (
-          <div key={index} className="space-y-3">
+          <div key={index} className="space-y-3 animate-fade-in">
             {/* User Message */}
             <div className="flex justify-end">
-              <div className="bg-green-600 text-white p-3 rounded-lg max-w-xs lg:max-w-md">
+              <div className="bg-primary text-primary-foreground p-3 rounded-2xl max-w-xs lg:max-w-md shadow-sm">
                 <p className="text-sm">{chat.message}</p>
               </div>
             </div>
-            
+
             {/* AI Response */}
             <div className="flex justify-start">
-              <div className="bg-gray-100 p-3 rounded-lg max-w-xs lg:max-w-md">
-                <div className="flex items-start space-x-2">
-                  <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-white text-xs">AI</span>
+              <div className="glass-surface p-3 rounded-2xl max-w-xs lg:max-w-md">
+                <div className="flex items-start gap-2">
+                  <div className="w-7 h-7 bg-gradient-to-br from-cyan-500 to-indigo-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+                    <span className="text-white text-xs font-bold">AI</span>
                   </div>
-                  <p className="text-sm text-gray-800 whitespace-pre-wrap">{chat.response}</p>
+                  <p className="text-sm whitespace-pre-wrap">{chat.response}</p>
                 </div>
               </div>
             </div>
@@ -92,41 +96,43 @@ export function ChatInterface() {
         ))}
 
         {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-gray-100 p-3 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xs">AI</span>
+          <div className="flex justify-start animate-fade-in">
+            <div className="glass-surface p-3 rounded-2xl">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 bg-gradient-to-br from-cyan-500 to-indigo-500 rounded-full flex items-center justify-center shadow-sm">
+                  <span className="text-white text-xs font-bold">AI</span>
                 </div>
                 <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce"></div>
+                  <div
+                    className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce"
+                    style={{ animationDelay: "0.1s" }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce"
+                    style={{ animationDelay: "0.2s" }}
+                  ></div>
                 </div>
               </div>
             </div>
           </div>
         )}
-        
+
         <div ref={messagesEndRef} />
       </div>
 
       {/* Input Form */}
-      <form onSubmit={handleSubmit} className="p-4 border-t">
-        <div className="flex space-x-2">
+      <form onSubmit={handleSubmit} className="p-4 border-t border-white/20 dark:border-white/10">
+        <div className="flex gap-2">
           <input
             type="text"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Ask about government services..."
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+            className="input flex-1"
             disabled={isLoading}
           />
-          <button
-            type="submit"
-            disabled={!message.trim() || isLoading}
-            className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
+          <button type="submit" disabled={!message.trim() || isLoading} className="btn-primary">
             Send
           </button>
         </div>
