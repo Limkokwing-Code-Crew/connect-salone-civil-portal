@@ -1,0 +1,17 @@
+# SaloneHub Backend API - Apache Configuration
+RewriteEngine On
+
+# API routes
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^api/(.*)$ api/$1 [L]
+
+# Serve React build files
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ public/$1 [L]
+
+# Fallback to index.html for React Router
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^public/(.*)$ public/index.html [L]
+

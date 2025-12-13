@@ -1,0 +1,45 @@
+# SaloneHub .gitignore
+
+# Sensitive files (uncomment if you want to exclude config.php)
+# config.php
+*.env
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+error_log
+access_log
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+
+# Database backups
+*.sql.bak
+*.sql.gz
+
+# PHP
+vendor/
+composer.lock
+
+# Node modules (if any)
+node_modules/
+package-lock.json
+
+# Build files
+dist/
+build/
+

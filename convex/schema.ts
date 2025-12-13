@@ -5,38 +5,49 @@ import { authTables } from "@convex-dev/auth/server";
 const applicationTables = {
   services: defineTable({
     name: v.string(),
-    ministry: v.string(),
-    category: v.string(),
-    description: v.string(),
-    requirements: v.array(v.string()),
-    officialFees: v.string(),
-    processingTime: v.string(),
-    locations: v.array(v.string()),
+    agency: v.optional(v.string()),
+    fee: v.optional(v.string()),
+    processingTime: v.optional(v.string()),
+    documents: v.optional(v.array(v.string())),
+    eligibility: v.optional(v.string()),
+    processSteps: v.optional(v.array(v.string())),
+    locations: v.optional(v.array(v.string())),
+    contacts: v.optional(v.string()),
+    notes: v.optional(v.string()),
+    lastVerified: v.optional(v.string()),
+    region: v.optional(v.string()),
+    ministry: v.optional(v.string()),
+    category: v.optional(v.string()),
+    description: v.optional(v.string()),
+    requirements: v.optional(v.array(v.string())),
+    officialFees: v.optional(v.string()),
     contactInfo: v.optional(v.string()),
     websiteUrl: v.optional(v.string()),
   })
-    .index("by_ministry", ["ministry"])
-    .index("by_category", ["category"])
+    .index("by_agency", ["agency"])
+    .index("by_region", ["region"])
     .searchIndex("search_services", {
       searchField: "name",
-      filterFields: ["ministry", "category"],
+      filterFields: ["agency", "region"],
     }),
 
   representatives: defineTable({
     name: v.string(),
-    title: v.string(),
-    ministry: v.string(),
+    role: v.optional(v.string()),
     district: v.string(),
-    phone: v.optional(v.string()),
-    email: v.optional(v.string()),
-    office: v.string(),
-    officeAddress: v.string(),
+    constituency: v.optional(v.string()),
+    phone: v.string(),
+    email: v.string(),
+    title: v.optional(v.string()),
+    ministry: v.optional(v.string()),
+    office: v.optional(v.string()),
+    officeAddress: v.optional(v.string()),
   })
     .index("by_district", ["district"])
-    .index("by_ministry", ["ministry"])
+    .index("by_role", ["role"])
     .searchIndex("search_representatives", {
       searchField: "name",
-      filterFields: ["district", "ministry"],
+      filterFields: ["district", "role"],
     }),
 
   chatMessages: defineTable({

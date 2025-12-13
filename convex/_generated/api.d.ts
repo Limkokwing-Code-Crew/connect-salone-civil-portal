@@ -15,9 +15,11 @@ import type {
 } from "convex/server";
 import type * as auth from "../auth.js";
 import type * as chat from "../chat.js";
+import type * as clear from "../clear.js";
 import type * as http from "../http.js";
 import type * as representatives from "../representatives.js";
 import type * as router from "../router.js";
+import type * as seed from "../seed.js";
 import type * as services from "../services.js";
 
 /**
@@ -31,9 +33,11 @@ import type * as services from "../services.js";
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   chat: typeof chat;
+  clear: typeof clear;
   http: typeof http;
   representatives: typeof representatives;
   router: typeof router;
+  seed: typeof seed;
   services: typeof services;
 }>;
 export declare const api: FilterApi<

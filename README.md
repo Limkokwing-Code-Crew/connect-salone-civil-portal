@@ -1,7 +1,6 @@
 # Connect Salone - Sierra Leone Civic Portal
   
-This is a project built with [Chef](https://chef.convex.dev) using [Convex](https://convex.dev) as its backend.
- You can find docs about Chef with useful information like how to deploy to production [here](https://docs.convex.dev/chef).
+This is a project built with Convex using [Vite](https://vitejs.dev/) for the frontend.
   
 This project is connected to the Convex deployment named [`fortunate-sandpiper-477`](https://dashboard.convex.dev/d/fortunate-sandpiper-477).
   
@@ -15,7 +14,7 @@ The backend code is in the `convex` directory.
 
 ## App authentication
 
-Chef apps use [Convex Auth](https://auth.convex.dev/) with Anonymous auth for easy sign in. You may wish to change this before deploying your app.
+This app uses [Convex Auth](https://auth.convex.dev/) with Anonymous auth for easy sign in. You may wish to change this before deploying your app.
 
 ## Developing and deploying your app
 

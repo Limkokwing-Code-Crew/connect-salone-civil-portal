@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { LiquidBackground } from "@/components/LiquidBackground";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Modal } from "@/components/Modal";
+import { Footer } from "@/components/Footer";
 import { useTheme } from "@/hooks/useTheme";
 import { cn } from "@/lib/utils";
 
@@ -85,6 +86,8 @@ export default function App() {
       <main className="flex-1">
         <Content activeTab={activeTab} setActiveTab={setActiveTab} />
       </main>
+
+      <Footer />
 
       <Modal
         open={tourOpen}
