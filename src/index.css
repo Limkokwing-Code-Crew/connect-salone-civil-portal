@@ -123,6 +123,10 @@
     @apply input pr-10;
   }
 
+  .select option {
+    @apply bg-background text-foreground;
+  }
+
   .pill {
     @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-medium glass-surface;
   }

@@ -7,23 +7,30 @@ import { ChatInterface } from "./components/ChatInterface";
 import { ServiceDirectory } from "./components/ServiceDirectory";
 import { RepresentativeFinder } from "./components/RepresentativeFinder";
 import { NewsSection } from "@/components/NewsSection";
+import { AdminDashboard } from "@/components/AdminDashboard";
 import { useEffect, useState } from "react";
 import { LiquidBackground } from "@/components/LiquidBackground";
+import { OfflineBanner } from "@/components/OfflineBanner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Modal } from "@/components/Modal";
 import { Footer } from "@/components/Footer";
 import { useTheme } from "@/hooks/useTheme";
 import { cn } from "@/lib/utils";
+import "./i18n";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "./components/LanguageSwitcher";
 
-const TOUR_SEEN_KEY = "connect_salone_tour_seen";
+
+const TOUR_SEEN_KEY = "salone_hub_tour_seen";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<
-    "chat" | "services" | "representatives" | "news"
+    "chat" | "services" | "representatives" | "news" | "admin"
   >("chat");
   const [tourOpen, setTourOpen] = useState(false);
 
   const { theme, resolvedTheme, cycleTheme } = useTheme();
+  const { t } = useTranslation();
 
   useEffect(() => {
     try {
@@ -58,7 +65,9 @@ export default function App() {
                   <span className="text-white font-bold text-sm">SL</span>
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold tracking-tight">Connect Salone</h1>
+                  <h1 className="text-xl font-bold tracking-tight">
+                    {t("appName")}
+                  </h1>
                   <p className="text-xs text-muted-foreground">
                     Sierra Leone civic portal • fast, friendly, and official
                   </p>
@@ -66,6 +75,7 @@ export default function App() {
               </div>
 
               <div className="flex items-center gap-2">
+                <LanguageSwitcher />
                 <button
                   type="button"
                   className="btn-ghost px-3"
@@ -92,21 +102,23 @@ export default function App() {
       <Modal
         open={tourOpen}
         onOpenChange={onTourOpenChange}
-        title="Welcome to Connect Salone"
+        title="Welcome to Salone Hub"
       >
         <div className="space-y-4">
           <div className="glass-surface rounded-2xl p-4">
             <div className="font-semibold">What you can do here</div>
             <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
               <li>
-                <span className="mr-2">🤖</span>Ask the AI assistant about requirements, fees,
-                and where to go.
+                <span className="mr-2">🤖</span>Ask the AI assistant about
+                requirements, fees, and where to go.
               </li>
               <li>
-                <span className="mr-2">📋</span>Browse government services with filters.
+                <span className="mr-2">📋</span>Browse government services with
+                filters.
               </li>
               <li>
-                <span className="mr-2">👥</span>Find officials and contact details by district.
+                <span className="mr-2">👥</span>Find officials and contact
+                details by district.
               </li>
             </ul>
           </div>
@@ -115,21 +127,27 @@ export default function App() {
             <div className="font-semibold">Pro tips</div>
             <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
               <li>
-                <span className="mr-2">🌓</span>Use the theme button to cycle Light → Dark →
-                Auto.
+                <span className="mr-2">🌓</span>Use the theme button to cycle
+                Light → Dark → Auto.
               </li>
               <li>
-                <span className="mr-2">✨</span>Click a tab — cards have hover lift, blur, and
-                subtle motion.
+                <span className="mr-2">✨</span>Click a tab — cards have hover
+                lift, blur, and subtle motion.
               </li>
             </ul>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2">
-            <button className="btn-primary w-full" onClick={() => onTourOpenChange(false)}>
+            <button
+              className="btn-primary w-full"
+              onClick={() => onTourOpenChange(false)}
+            >
               Let’s go
             </button>
-            <button className="btn-ghost w-full" onClick={() => onTourOpenChange(false)}>
+            <button
+              className="btn-ghost w-full"
+              onClick={() => onTourOpenChange(false)}
+            >
               Maybe later
             </button>
           </div>
@@ -137,6 +155,7 @@ export default function App() {
       </Modal>
 
       <Toaster theme={resolvedTheme} richColors closeButton />
+      <OfflineBanner />
     </div>
   );
 }
@@ -145,10 +164,18 @@ function Content({
   activeTab,
   setActiveTab,
 }: {
-  activeTab: "chat" | "services" | "representatives" | "news";
-  setActiveTab: (tab: "chat" | "services" | "representatives" | "news") => void;
+  activeTab: "chat" | "services" | "representatives" | "news" | "admin";
+  setActiveTab: (tab: "chat" | "services" | "representatives" | "news" | "admin") => void;
 }) {
+  const { t } = useTranslation();
   const loggedInUser = useQuery(api.auth.loggedInUser);
+  const isAdmin = loggedInUser?.email === "admin@salonehub.sl";
+
+  const handleLogout = () => {
+    // Start sign out logic if needed, but SignOutButton handles it. 
+    // We can just switch tab back to chat or something.
+    window.location.reload();
+  };
 
   if (loggedInUser === undefined) {
     return (
@@ -162,10 +189,12 @@ function Content({
     <div className="max-w-5xl mx-auto px-4 py-6">
       <Unauthenticated>
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold tracking-tight mb-3">Welcome to Connect Salone</h2>
+          <h2 className="text-3xl font-bold tracking-tight mb-3">
+            Welcome to Salone Hub
+          </h2>
           <p className="text-lg text-muted-foreground mb-6 text-balance">
-            Your unified portal for Sierra Leone government services — designed to be modern,
-            friendly, and fast.
+            Your unified portal for Sierra Leone government services — designed
+            to be modern, friendly, and fast.
           </p>
           <div className="glass-card card-hover p-6">
             <SignInForm />
@@ -179,8 +208,19 @@ function Content({
             Welcome back, {loggedInUser?.email?.split("@")[0] || "Citizen"}!
           </h2>
           <p className="text-muted-foreground">
-            What do you want to do today — ask the AI, browse services, or find officials?
+            What do you want to do today — ask the AI, browse services, or find
+            officials?
           </p>
+          {isAdmin && (
+            <div className="mt-4">
+              <button
+                onClick={() => setActiveTab("admin")}
+                className="btn-primary bg-red-600 hover:bg-red-700 border-red-500"
+              >
+                Enter Admin Dashboard
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Navigation Tabs */}
@@ -194,7 +234,7 @@ function Content({
                 : "hover:bg-white/50 dark:hover:bg-white/5 text-muted-foreground",
             )}
           >
-            🤖 AI Assistant
+            🤖 {t("chat")}
           </button>
           <button
             onClick={() => setActiveTab("services")}
@@ -205,7 +245,7 @@ function Content({
                 : "hover:bg-white/50 dark:hover:bg-white/5 text-muted-foreground",
             )}
           >
-            📋 Services
+            📋 {t("services")}
           </button>
           <button
             onClick={() => setActiveTab("representatives")}
@@ -216,7 +256,7 @@ function Content({
                 : "hover:bg-white/50 dark:hover:bg-white/5 text-muted-foreground",
             )}
           >
-            👥 Officials
+            👥 {t("representatives")}
           </button>
           <button
             onClick={() => setActiveTab("news")}
@@ -227,7 +267,7 @@ function Content({
                 : "hover:bg-white/50 dark:hover:bg-white/5 text-muted-foreground",
             )}
           >
-            📰 News
+            📰 {t("news")}
           </button>
         </div>
 
@@ -236,6 +276,7 @@ function Content({
         {activeTab === "services" && <ServiceDirectory />}
         {activeTab === "representatives" && <RepresentativeFinder />}
         {activeTab === "news" && <NewsSection />}
+        {activeTab === "admin" && isAdmin && <AdminDashboard onLogout={handleLogout} />}
       </Authenticated>
     </div>
   );

@@ -1,0 +1,56 @@
+{
+  "appName": "Salone Hub",
+  "services": "Sabis Dem",
+  "representatives": "Big Man Dem",
+  "chat": "Tok Bot",
+  "news": "News",
+  "feedback": "Gi Feedback",
+  "language": "Langwej",
+  "admin": {
+    "title": "Admin Kontrol Senta",
+    "login": "Admin Login",
+    "logout": "Comot",
+    "services": "Sabis",
+    "representatives": "Big Man Dem",
+    "feedback": "Feedback",
+    "analytics": "Analitiks"
+  },
+  "common": {
+    "loading": "Di tin dae load...",
+    "error": "Error",
+    "success": "Done",
+    "cancel": "Cancel",
+    "save": "Keep",
+    "delete": "Delete",
+    "edit": "Change",
+    "close": "Close"
+  },
+  "serviceDirectory": {
+    "title": "Sabis Directory",
+    "subtitle": "Look fɔ verified govment sabis dem, moni fɔ pay, ɛn wetin dɛn want.",
+    "searchPlaceholder": "Fain sabis (e.g., paspot)...",
+    "allAgencies": "ɔl Ejɛnsi Dɛm",
+    "allRegions": "ɔl Sai Dɛm",
+    "viewDetails": "Luk dɛtɛl",
+    "noServices": "No Sabis Nɔ De",
+    "fee": "Moni",
+    "time": "Tɛm"
+  },
+  "repFinder": {
+    "title": "Big Man Finder",
+    "subtitle": "Fain govment big man dɛn na Salone.",
+    "searchPlaceholder": "Fain by nem...",
+    "allDistricts": "ɔl Distrikt Dɛm",
+    "allRoles": "ɔl Wok Dɛm",
+    "noReps": "No Big Man Nɔ De",
+    "call": "Kɔl",
+    "email": "Imel"
+  },
+  "chatInterface": {
+    "title": "Salone Hub AI Assistant",
+    "subtitle": "Aks bɔt wetin dɛn want, moni fɔ pay, ɛn usai fɔ go.",
+    "welcome": "Wɛlkɔm to Salone Hub AI!",
+    "placeholder": "Aks bɔt govment sabis...",
+    "send": "Sɛn"
+  }
+}

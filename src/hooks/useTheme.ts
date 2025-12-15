@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 
 export type ThemeSetting = "light" | "dark" | "system";
 
-const THEME_STORAGE_KEY = "connect_salone_theme";
+const THEME_STORAGE_KEY = "salone_hub_theme";
 
 function getSystemPrefersDark() {
   if (typeof window === "undefined") return false;
@@ -17,8 +17,11 @@ function resolveTheme(theme: ThemeSetting): "light" | "dark" {
 export function useTheme() {
   const [theme, setTheme] = useState<ThemeSetting>(() => {
     if (typeof window === "undefined") return "system";
-    const stored = window.localStorage.getItem(THEME_STORAGE_KEY) as ThemeSetting | null;
-    if (stored === "light" || stored === "dark" || stored === "system") return stored;
+    const stored = window.localStorage.getItem(
+      THEME_STORAGE_KEY,
+    ) as ThemeSetting | null;
+    if (stored === "light" || stored === "dark" || stored === "system")
+      return stored;
     return "system";
   });
 
@@ -49,7 +52,9 @@ export function useTheme() {
   }, [theme]);
 
   const cycleTheme = () => {
-    setTheme((prev) => (prev === "light" ? "dark" : prev === "dark" ? "system" : "light"));
+    setTheme((prev) =>
+      prev === "light" ? "dark" : prev === "dark" ? "system" : "light",
+    );
   };
 
   return {

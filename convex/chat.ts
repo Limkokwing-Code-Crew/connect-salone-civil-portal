@@ -16,13 +16,19 @@ export const sendMessage = action({
       apiKey: process.env.CONVEX_OPENAI_API_KEY,
     });
 
+    // Rate Limiting: Check last message time
+    const lastMessage = await ctx.runQuery(api.chat.getLastMessage, { sessionId: args.sessionId });
+    if (lastMessage && Date.now() - lastMessage.timestamp < 5000) {
+      throw new Error("Whoa, slow down! Please wait a few seconds.");
+    }
+
     try {
       const completion = await openai.chat.completions.create({
         model: "gpt-4.1-nano",
         messages: [
           {
             role: "system",
-            content: `You are Connect Salone AI, an intelligent assistant for Sierra Leone government services. You help citizens navigate government processes, find information about services, fees, requirements, and contact details.
+            content: `You are Salone Hub AI, an intelligent assistant for Sierra Leone government services. You help citizens navigate government processes, find information about services, fees, requirements, and contact details.
 
 Key guidelines:
 - Provide accurate information about Sierra Leone government services
@@ -33,18 +39,20 @@ Key guidelines:
 - Use simple, clear language accessible to all education levels
 - Include contact information when available
 
-Available services include passport applications, business registration, driver's licenses, birth certificates, marriage certificates, tax registration, land titles, import/export licenses, health certificates, police clearances, work permits, and many others across various ministries.`
+Available services include passport applications, business registration, driver's licenses, birth certificates, marriage certificates, tax registration, land titles, import/export licenses, health certificates, police clearances, work permits, and many others across various ministries.`,
           },
           {
             role: "user",
-            content: args.message
-          }
+            content: args.message,
+          },
         ],
         max_tokens: 500,
         temperature: 0.7,
       });
 
-      const aiResponse = completion.choices[0]?.message?.content || "I apologize, but I'm having trouble processing your request right now. Please try again or contact the relevant ministry directly.";
+      const aiResponse =
+        completion.choices[0]?.message?.content ||
+        "I apologize, but I'm having trouble processing your request right now. Please try again or contact the relevant ministry directly.";
 
       // Save the conversation
       await ctx.runMutation(api.chat.saveMessage, {
@@ -56,8 +64,9 @@ Available services include passport applications, business registration, driver'
       return aiResponse;
     } catch (error) {
       console.error("OpenAI API error:", error);
-      const fallbackResponse = "I apologize, but I'm having trouble processing your request right now. Please try again or contact the relevant ministry directly.";
-      
+      const fallbackResponse =
+        "I apologize, but I'm having trouble processing your request right now. Please try again or contact the relevant ministry directly.";
+
       // Save the conversation with fallback response
       await ctx.runMutation(api.chat.saveMessage, {
         message: args.message,
@@ -78,7 +87,7 @@ export const saveMessage = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    
+
     await ctx.db.insert("chatMessages", {
       userId: userId || undefined,
       sessionId: args.sessionId,
@@ -99,5 +108,16 @@ export const getChatHistory = query({
       .withIndex("by_session", (q) => q.eq("sessionId", args.sessionId))
       .order("asc")
       .collect();
+  },
+});
+
+export const getLastMessage = query({
+  args: { sessionId: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("chatMessages")
+      .withIndex("by_session", (q) => q.eq("sessionId", args.sessionId))
+      .order("desc")
+      .first();
   },
 });

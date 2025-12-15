@@ -103,7 +103,7 @@ export function Modal(props: {
         ref={dialogRef}
         tabIndex={-1}
         className={cn(
-          "relative w-full max-w-xl glass-card card-hover p-6 animate-fade-in outline-none",
+          "relative w-full max-w-xl max-h-[90vh] flex flex-col glass-card card-hover p-6 animate-fade-in outline-none",
           props.className,
         )}
       >
@@ -125,7 +125,7 @@ export function Modal(props: {
           </button>
         </div>
 
-        <div className="mt-4">{props.children}</div>
+        <div className="mt-4 overflow-y-auto min-h-0 flex-1 -mr-2 pr-2 custom-scrollbar">{props.children}</div>
       </div>
     </div>,
     document.body,

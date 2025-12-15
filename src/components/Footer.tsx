@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { toast } from "sonner";
+import { FeedbackModal } from "./FeedbackModal";
+import { useTranslation } from "react-i18next";
 
 export function Footer() {
   const [email, setEmail] = useState("");
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const { t } = useTranslation();
 
   const submit = () => {
     const value = email.trim();
@@ -43,8 +47,16 @@ export function Footer() {
                 </li>
                 <li>
                   <a className="hover:text-yellow-300 transition" href="#">
-                    News
+                    {t("news")}
                   </a>
+                </li>
+                <li>
+                  <button
+                    onClick={() => setFeedbackOpen(true)}
+                    className="hover:text-yellow-300 transition text-left"
+                  >
+                    {t("feedback")}
+                  </button>
                 </li>
               </ul>
             </div>
@@ -89,6 +101,7 @@ export function Footer() {
           </div>
         </div>
       </div>
+      <FeedbackModal open={feedbackOpen} onOpenChange={setFeedbackOpen} />
     </footer>
   );
 }

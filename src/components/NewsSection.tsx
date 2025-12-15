@@ -1,6 +1,11 @@
 import { useMemo, useState } from "react";
 
-type NewsCategory = "Government" | "Health" | "Education" | "Transport" | "Public Notice";
+type NewsCategory =
+  | "Government"
+  | "Health"
+  | "Education"
+  | "Transport"
+  | "Public Notice";
 
 type NewsItem = {
   id: string;
@@ -20,7 +25,7 @@ const SAMPLE_NEWS: NewsItem[] = [
       "Selected public offices will operate extended hours on weekdays to reduce queue times for citizens.",
     category: "Public Notice",
     date: "2025-12-10",
-    source: "Connect Salone",
+    source: "Salone Hub",
   },
   {
     id: "n2",
@@ -29,7 +34,7 @@ const SAMPLE_NEWS: NewsItem[] = [
       "A pilot program is launching to let citizens book appointments for high-demand services online.",
     category: "Government",
     date: "2025-12-06",
-    source: "Connect Salone",
+    source: "Salone Hub",
   },
   {
     id: "n3",
@@ -38,7 +43,7 @@ const SAMPLE_NEWS: NewsItem[] = [
       "Tips for protecting vulnerable groups during dusty conditions, including masks, hydration, and clinic hotlines.",
     category: "Health",
     date: "2025-11-29",
-    source: "Connect Salone",
+    source: "Salone Hub",
   },
   {
     id: "n4",
@@ -47,7 +52,7 @@ const SAMPLE_NEWS: NewsItem[] = [
       "A reminder to prepare documents early—ID, transcripts, and reference letters—to avoid last-minute delays.",
     category: "Education",
     date: "2025-11-21",
-    source: "Connect Salone",
+    source: "Salone Hub",
   },
   {
     id: "n5",
@@ -56,7 +61,7 @@ const SAMPLE_NEWS: NewsItem[] = [
       "Quick checklist of required documents and the typical processing timeline for vehicle registration.",
     category: "Transport",
     date: "2025-11-15",
-    source: "Connect Salone",
+    source: "Salone Hub",
   },
 ];
 
@@ -128,7 +133,9 @@ export function NewsSection() {
           <article key={n.id} className="glass-card card-hover p-6">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <h4 className="text-lg font-bold tracking-tight truncate">{n.title}</h4>
+                <h4 className="text-lg font-bold tracking-tight truncate">
+                  {n.title}
+                </h4>
                 <div className="mt-2 flex flex-wrap gap-2">
                   <span className="pill">📰 {n.category}</span>
                   <span className="pill">📅 {formatDate(n.date)}</span>
@@ -140,11 +147,19 @@ export function NewsSection() {
 
             <div className="mt-4 flex items-center justify-between gap-3">
               <div className="text-xs text-muted-foreground">
-                Source: <span className="font-medium text-foreground/80">{n.source ?? "—"}</span>
+                Source:{" "}
+                <span className="font-medium text-foreground/80">
+                  {n.source ?? "—"}
+                </span>
               </div>
 
               {n.href ? (
-                <a className="btn-ghost" href={n.href} target="_blank" rel="noreferrer">
+                <a
+                  className="btn-ghost"
+                  href={n.href}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   Read more
                 </a>
               ) : (
@@ -168,8 +183,9 @@ export function NewsSection() {
       )}
 
       <div className="glass-surface rounded-2xl p-4 text-sm text-muted-foreground">
-        <span className="font-semibold text-foreground/90">Note:</span> This is a starter news
-        feed. If you want, I can connect it to Convex so admins can publish announcements.
+        <span className="font-semibold text-foreground/90">Note:</span> This is
+        a starter news feed. If you want, I can connect it to Convex so admins
+        can publish announcements.
       </div>
     </div>
   );

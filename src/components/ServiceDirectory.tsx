@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Modal } from "@/components/Modal";
@@ -12,6 +13,7 @@ import {
   AlertTriangle,
   Check,
 } from "lucide-react";
+import { ServiceCardSkeleton } from "./Skeleton";
 
 const REGIONS = [
   "Freetown",
@@ -42,6 +44,8 @@ export function ServiceDirectory() {
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(
     null,
   );
+
+  const { t } = useTranslation();
 
   const services = useQuery(api.services.searchServices, {
     searchTerm: searchTerm || undefined,
@@ -74,27 +78,13 @@ export function ServiceDirectory() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass-card card-hover p-8 text-center"
+        className="space-y-6"
       >
-        <div className="text-6xl mb-4">📋</div>
-        <h3 className="text-2xl font-bold tracking-tight mb-2">
-          Service Directory
-        </h3>
-        <p className="text-muted-foreground mb-6">
-          Browse verified government services, fees, and requirements.
-        </p>
-        <div className="flex flex-wrap justify-center gap-2 mb-6">
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full glass text-sm">
-            <Check size={16} className="text-green-400" />
-            <span>Verified data</span>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full glass text-sm">
-            <Clock size={16} className="text-yellow-400" />
-            <span>Real-time updates</span>
-          </div>
-        </div>
-        <div className="text-sm text-muted-foreground">
-          Loading services from database...
+        {/* Show skeletons while loading initially */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <ServiceCardSkeleton key={i} />
+          ))}
         </div>
       </motion.div>
     );
@@ -116,7 +106,7 @@ export function ServiceDirectory() {
             />
             <input
               type="text"
-              placeholder="Search services (e.g., passport, driver's license)..."
+              placeholder={t("serviceDirectory.searchPlaceholder")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="input pl-12"
@@ -129,7 +119,7 @@ export function ServiceDirectory() {
               onChange={(e) => setSelectedAgency(e.target.value)}
               className="select"
             >
-              <option value="">All Agencies</option>
+              <option value="">{t("serviceDirectory.allAgencies")}</option>
               {agencies?.map((agency) => (
                 <option key={agency} value={agency}>
                   {agency}
@@ -142,7 +132,7 @@ export function ServiceDirectory() {
               onChange={(e) => setSelectedRegion(e.target.value)}
               className="select"
             >
-              <option value="">All Regions</option>
+              <option value="">{t("serviceDirectory.allRegions")}</option>
               {REGIONS.map((r) => (
                 <option key={r} value={r}>
                   {r}
@@ -155,7 +145,7 @@ export function ServiceDirectory() {
 
       {/* Services Grid */}
       {filtered.length === 0 &&
-      (searchTerm || selectedAgency || selectedRegion) ? (
+        (searchTerm || selectedAgency || selectedRegion) ? (
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -163,7 +153,7 @@ export function ServiceDirectory() {
         >
           <div className="text-4xl mb-4">🔍</div>
           <h3 className="text-xl font-bold tracking-tight mb-2">
-            No Services Found
+            {t("serviceDirectory.noServices")}
           </h3>
           <p className="text-muted-foreground">
             Try adjusting your search criteria or filters.
@@ -189,8 +179,8 @@ export function ServiceDirectory() {
                   <MapPin size={12} />
                   {service.locations
                     ? (REGIONS.find((r) =>
-                        matchesRegion(service.locations, r),
-                      ) ?? "Nationwide")
+                      matchesRegion(service.locations || [], r),
+                    ) ?? "Nationwide")
                     : "Nationwide"}
                 </span>
               </div>
@@ -206,14 +196,14 @@ export function ServiceDirectory() {
                 <div className="flex items-center gap-2">
                   <DollarSign size={14} className="text-muted-foreground" />
                   <div>
-                    <span className="text-muted-foreground">Fee:</span>
+                    <span className="text-muted-foreground">{t("serviceDirectory.fee")}:</span>
                     <p className="font-semibold line-clamp-1">{service.fee}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock size={14} className="text-muted-foreground" />
                   <div>
-                    <span className="text-muted-foreground">Time:</span>
+                    <span className="text-muted-foreground">{t("serviceDirectory.time")}:</span>
                     <p className="font-semibold line-clamp-1">
                       {service.processingTime}
                     </p>
@@ -222,7 +212,7 @@ export function ServiceDirectory() {
               </div>
 
               <div className="btn-primary w-full justify-center">
-                View details →
+                {t("serviceDirectory.viewDetails")} →
               </div>
             </motion.div>
           ))}

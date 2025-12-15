@@ -1,0 +1,56 @@
+{
+  "appName": "Salone Hub",
+  "services": "Sefis",
+  "representatives": "Kapriŋ",
+  "chat": "Tok",
+  "news": "Nius",
+  "feedback": "Gi Tok",
+  "language": "Langwej",
+  "admin": {
+    "title": "Admin Kontrol",
+    "login": "Admin Login",
+    "logout": "Go Out",
+    "services": "Sefis",
+    "representatives": "Kapriŋ",
+    "feedback": "Feedback",
+    "analytics": "Analitiks"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close"
+  },
+  "serviceDirectory": {
+    "title": "Service Directory",
+    "subtitle": "Browse verified government services.",
+    "searchPlaceholder": "Search services...",
+    "allAgencies": "All Agencies",
+    "allRegions": "All Regions",
+    "viewDetails": "View details",
+    "noServices": "No Services Found",
+    "fee": "Fee",
+    "time": "Time"
+  },
+  "repFinder": {
+    "title": "Representative Finder",
+    "subtitle": "Find government officials.",
+    "searchPlaceholder": "Search by name...",
+    "allDistricts": "All Districts",
+    "allRoles": "All Roles",
+    "noReps": "No Representatives Found",
+    "call": "Call",
+    "email": "Email"
+  },
+  "chatInterface": {
+    "title": "Salone Hub AI Assistant",
+    "subtitle": "Ask about requirements and fees.",
+    "welcome": "Welcome to Salone Hub AI!",
+    "placeholder": "Ask about government services...",
+    "send": "Send"
+  }
+}

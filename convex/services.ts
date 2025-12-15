@@ -89,3 +89,33 @@ export const deleteService = mutation({
     await ctx.db.delete(args.id);
   },
 });
+
+export const updateService = mutation({
+  args: {
+    id: v.id("services"),
+    name: v.optional(v.string()),
+    agency: v.optional(v.string()),
+    fee: v.optional(v.string()),
+    processingTime: v.optional(v.string()),
+    documents: v.optional(v.array(v.string())),
+    eligibility: v.optional(v.string()),
+    processSteps: v.optional(v.array(v.string())),
+    locations: v.optional(v.array(v.string())),
+    contacts: v.optional(v.string()),
+    notes: v.optional(v.string()),
+    lastVerified: v.optional(v.string()),
+    region: v.optional(v.string()),
+    ministry: v.optional(v.string()),
+    category: v.optional(v.string()),
+    description: v.optional(v.string()),
+    requirements: v.optional(v.array(v.string())),
+    officialFees: v.optional(v.string()),
+    contactInfo: v.optional(v.string()),
+    websiteUrl: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const { id, ...data } = args;
+    await ctx.db.patch(id, data);
+    return id;
+  },
+});

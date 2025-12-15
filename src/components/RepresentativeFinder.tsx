@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { motion } from "framer-motion";
@@ -8,6 +9,7 @@ export function RepresentativeFinder() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
+  const { t } = useTranslation();
 
   const representatives = useQuery(api.representatives.searchRepresentatives, {
     searchTerm: searchTerm || undefined,
@@ -32,10 +34,10 @@ export function RepresentativeFinder() {
       >
         <div className="text-6xl mb-4">👥</div>
         <h3 className="text-2xl font-bold tracking-tight mb-2">
-          Representative Finder
+          {t("repFinder.title")}
         </h3>
         <p className="text-muted-foreground mb-6">
-          Find government officials and representatives across Sierra Leone.
+          {t("repFinder.subtitle")}
         </p>
         <div className="flex flex-wrap justify-center gap-2 mb-6">
           <div className="flex items-center gap-2 px-3 py-1 rounded-full glass text-sm">
@@ -44,7 +46,7 @@ export function RepresentativeFinder() {
           </div>
           <div className="flex items-center gap-2 px-3 py-1 rounded-full glass text-sm">
             <MapPin size={16} className="text-green-400" />
-            <span>All Districts</span>
+            <span>{t("repFinder.allDistricts")}</span>
           </div>
         </div>
         <div className="text-sm text-muted-foreground">
@@ -70,7 +72,7 @@ export function RepresentativeFinder() {
             />
             <input
               type="text"
-              placeholder="Search by name (e.g., Mohamed Bangura)..."
+              placeholder={t("repFinder.searchPlaceholder")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="input pl-12"
@@ -83,7 +85,7 @@ export function RepresentativeFinder() {
               onChange={(e) => setSelectedDistrict(e.target.value)}
               className="select"
             >
-              <option value="">All Districts</option>
+              <option value="">{t("repFinder.allDistricts")}</option>
               {districts?.map((district) => (
                 <option key={district} value={district}>
                   {district}
@@ -96,7 +98,7 @@ export function RepresentativeFinder() {
               onChange={(e) => setSelectedRole(e.target.value)}
               className="select"
             >
-              <option value="">All Roles</option>
+              <option value="">{t("repFinder.allRoles")}</option>
               {roles?.map((role) => (
                 <option key={role} value={role}>
                   {role}
@@ -109,7 +111,7 @@ export function RepresentativeFinder() {
 
       {/* Representatives List */}
       {representatives?.length === 0 &&
-      (searchTerm || selectedDistrict || selectedRole) ? (
+        (searchTerm || selectedDistrict || selectedRole) ? (
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -117,7 +119,7 @@ export function RepresentativeFinder() {
         >
           <div className="text-4xl mb-4">🔍</div>
           <h3 className="text-xl font-bold tracking-tight mb-2">
-            No Representatives Found
+            {t("repFinder.noReps")}
           </h3>
           <p className="text-muted-foreground">
             Try adjusting your search criteria or filters.
@@ -207,11 +209,11 @@ export function RepresentativeFinder() {
                 <div className="flex gap-2">
                   <button className="btn-ghost flex-1 text-sm">
                     <Phone size={14} className="mr-1" />
-                    Call
+                    {t("repFinder.call")}
                   </button>
                   <button className="btn-ghost flex-1 text-sm">
                     <Mail size={14} className="mr-1" />
-                    Email
+                    {t("repFinder.email")}
                   </button>
                 </div>
               </div>
