@@ -7,7 +7,7 @@ export function ChatInterface() {
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random()}`);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
+
   const sendMessage = useAction(api.chat.sendMessage);
   const chatHistory = useQuery(api.chat.getChatHistory, { sessionId });
 
@@ -43,7 +43,7 @@ export function ChatInterface() {
     <div className="glass-card card-hover h-[600px] flex flex-col overflow-hidden">
       {/* Chat Header */}
       <div className="p-4 border-b border-white/20 dark:border-white/10 bg-gradient-to-r from-emerald-600/90 to-cyan-600/80 text-white">
-        <h3 className="font-semibold tracking-tight">Connect Salone AI Assistant</h3>
+        <h3 className="font-semibold tracking-tight">SaloneHub AI Assistant</h3>
         <p className="text-sm opacity-90">
           Ask about requirements, fees, processing time, and where to go.
         </p>
@@ -55,7 +55,7 @@ export function ChatInterface() {
           <div className="text-center text-muted-foreground py-8">
             <div className="text-4xl mb-4">🤖</div>
             <p className="text-lg font-semibold text-foreground mb-2">
-              Welcome to Connect Salone AI!
+              Welcome to SaloneHub AI!
             </p>
             <p className="text-sm">Try one of these:</p>
             <div className="mt-4 space-y-2 text-left max-w-md mx-auto">

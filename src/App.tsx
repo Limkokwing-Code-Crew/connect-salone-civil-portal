@@ -15,7 +15,7 @@ import { Footer } from "@/components/Footer";
 import { useTheme } from "@/hooks/useTheme";
 import { cn } from "@/lib/utils";
 
-const TOUR_SEEN_KEY = "connect_salone_tour_seen";
+const TOUR_SEEN_KEY = "salone_hub_tour_seen";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<
@@ -58,7 +58,7 @@ export default function App() {
                   <span className="text-white font-bold text-sm">SL</span>
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold tracking-tight">Connect Salone</h1>
+                  <h1 className="text-xl font-bold tracking-tight">SaloneHub</h1>
                   <p className="text-xs text-muted-foreground">
                     Sierra Leone civic portal • fast, friendly, and official
                   </p>
@@ -92,7 +92,7 @@ export default function App() {
       <Modal
         open={tourOpen}
         onOpenChange={onTourOpenChange}
-        title="Welcome to Connect Salone"
+        title="Welcome to SaloneHub"
       >
         <div className="space-y-4">
           <div className="glass-surface rounded-2xl p-4">
@@ -162,7 +162,7 @@ function Content({
     <div className="max-w-5xl mx-auto px-4 py-6">
       <Unauthenticated>
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold tracking-tight mb-3">Welcome to Connect Salone</h2>
+          <h2 className="text-3xl font-bold tracking-tight mb-3">Welcome to SaloneHub</h2>
           <p className="text-lg text-muted-foreground mb-6 text-balance">
             Your unified portal for Sierra Leone government services — designed to be modern,
             friendly, and fast.
