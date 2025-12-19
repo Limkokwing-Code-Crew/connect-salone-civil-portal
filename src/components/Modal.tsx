@@ -11,7 +11,9 @@ function getFocusable(container: HTMLElement) {
     "select:not([disabled])",
     "[tabindex]:not([tabindex='-1'])",
   ];
-  return Array.from(container.querySelectorAll<HTMLElement>(selectors.join(","))).filter(
+  return Array.from(
+    container.querySelectorAll<HTMLElement>(selectors.join(",")),
+  ).filter(
     (el) => !el.hasAttribute("disabled") && !el.getAttribute("aria-hidden"),
   );
 }
@@ -103,7 +105,7 @@ export function Modal(props: {
         ref={dialogRef}
         tabIndex={-1}
         className={cn(
-          "relative w-full max-w-xl glass-card card-hover p-6 animate-fade-in outline-none",
+          "relative w-full max-w-xl max-h-[90vh] glass-card card-hover p-6 animate-fade-in outline-none flex flex-col",
           props.className,
         )}
       >
@@ -111,7 +113,9 @@ export function Modal(props: {
           <div>
             <h2 className="text-xl font-bold tracking-tight">{props.title}</h2>
             {props.description ? (
-              <p className="mt-1 text-sm text-muted-foreground">{props.description}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {props.description}
+              </p>
             ) : null}
           </div>
           <button
@@ -125,7 +129,7 @@ export function Modal(props: {
           </button>
         </div>
 
-        <div className="mt-4">{props.children}</div>
+        <div className="mt-4 overflow-y-auto flex-1">{props.children}</div>
       </div>
     </div>,
     document.body,

@@ -20,7 +20,7 @@ const SAMPLE_NEWS: NewsItem[] = [
       "Selected public offices will operate extended hours on weekdays to reduce queue times for citizens.",
     category: "Public Notice",
     date: "2025-12-10",
-    source: "Connect Salone",
+    source: "SaloneHub",
   },
   {
     id: "n2",
@@ -29,7 +29,7 @@ const SAMPLE_NEWS: NewsItem[] = [
       "A pilot program is launching to let citizens book appointments for high-demand services online.",
     category: "Government",
     date: "2025-12-06",
-    source: "Connect Salone",
+    source: "SaloneHub",
   },
   {
     id: "n3",
@@ -38,7 +38,7 @@ const SAMPLE_NEWS: NewsItem[] = [
       "Tips for protecting vulnerable groups during dusty conditions, including masks, hydration, and clinic hotlines.",
     category: "Health",
     date: "2025-11-29",
-    source: "Connect Salone",
+    source: "SaloneHub",
   },
   {
     id: "n4",
@@ -47,7 +47,7 @@ const SAMPLE_NEWS: NewsItem[] = [
       "A reminder to prepare documents early—ID, transcripts, and reference letters—to avoid last-minute delays.",
     category: "Education",
     date: "2025-11-21",
-    source: "Connect Salone",
+    source: "SaloneHub",
   },
   {
     id: "n5",
@@ -56,7 +56,7 @@ const SAMPLE_NEWS: NewsItem[] = [
       "Quick checklist of required documents and the typical processing timeline for vehicle registration.",
     category: "Transport",
     date: "2025-11-15",
-    source: "Connect Salone",
+    source: "SaloneHub",
   },
 ];
 

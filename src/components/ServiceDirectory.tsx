@@ -30,7 +30,8 @@ const REGIONS = [
   "Karene",
 ] as const;
 
-function matchesRegion(locations: string[], region: string) {
+function matchesRegion(locations: string[] | undefined, region: string) {
+  if (!locations || locations.length === 0) return false;
   const joined = locations.join(" ").toLowerCase();
   return joined.includes(region.toLowerCase());
 }
@@ -155,7 +156,7 @@ export function ServiceDirectory() {
 
       {/* Services Grid */}
       {filtered.length === 0 &&
-        (searchTerm || selectedAgency || selectedRegion) ? (
+      (searchTerm || selectedAgency || selectedRegion) ? (
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -189,8 +190,8 @@ export function ServiceDirectory() {
                   <MapPin size={12} />
                   {service.locations
                     ? (REGIONS.find((r) =>
-                      matchesRegion(service.locations, r),
-                    ) ?? "Nationwide")
+                        matchesRegion(service.locations, r),
+                      ) ?? "Nationwide")
                     : "Nationwide"}
                 </span>
               </div>
@@ -240,7 +241,7 @@ export function ServiceDirectory() {
             ? `${selectedService.agency} • ${selectedService.region}`
             : undefined
         }
-        className="max-w-4xl"
+        className="max-w-4xl max-h-[85vh]"
       >
         {selectedService ? (
           <div className="space-y-5">

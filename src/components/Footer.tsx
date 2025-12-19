@@ -21,7 +21,7 @@ export function Footer() {
           <div className="grid gap-8 md:grid-cols-4 mb-8">
             <div>
               <div className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-amber-300 to-yellow-500 bg-clip-text text-transparent">
-                Salone Hub
+                SaloneHub
               </div>
               <p className="mt-3 text-sm text-slate-300/80">
                 Fast, transparent access to Sierra Leone’s verified government services.
