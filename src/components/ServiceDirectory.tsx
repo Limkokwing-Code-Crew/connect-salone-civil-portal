@@ -155,7 +155,7 @@ export function ServiceDirectory() {
 
       {/* Services Grid */}
       {filtered.length === 0 &&
-      (searchTerm || selectedAgency || selectedRegion) ? (
+        (searchTerm || selectedAgency || selectedRegion) ? (
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -189,8 +189,8 @@ export function ServiceDirectory() {
                   <MapPin size={12} />
                   {service.locations
                     ? (REGIONS.find((r) =>
-                        matchesRegion(service.locations, r),
-                      ) ?? "Nationwide")
+                      matchesRegion(service.locations, r),
+                    ) ?? "Nationwide")
                     : "Nationwide"}
                 </span>
               </div>

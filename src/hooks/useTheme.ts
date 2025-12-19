@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 
 export type ThemeSetting = "light" | "dark" | "system";
 
-const THEME_STORAGE_KEY = "connect_salone_theme";
+const THEME_STORAGE_KEY = "salone_hub_theme";
 
 function getSystemPrefersDark() {
   if (typeof window === "undefined") return false;
