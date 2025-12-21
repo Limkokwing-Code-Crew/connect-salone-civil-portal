@@ -14,6 +14,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { Modal } from "@/components/Modal";
 import { Footer } from "@/components/Footer";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
+import { MobileMenu } from "./components/MobileMenu";
 import { useTheme } from "@/hooks/useTheme";
 import { cn } from "@/lib/utils";
 
@@ -54,35 +55,43 @@ export default function App() {
 
       <header className="sticky top-0 z-10">
         <div className="glass-surface border-b border-white/20 dark:border-white/10 shadow-sm">
-          <div className="max-w-5xl mx-auto px-3 sm:px-4 py-3">
-            <div className="flex justify-between items-center gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 via-green-600 to-cyan-500 rounded-xl flex items-center justify-center shadow-sm">
-                  <span className="text-white font-bold text-sm">SL</span>
+          <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto px-3 sm:px-4 py-3">
+            <div className="flex justify-between items-center gap-2 xs:gap-3">
+              <div className="flex items-center gap-2 xs:gap-3 min-w-0 flex-1">
+                <div className="w-8 h-8 xs:w-9 xs:h-9 bg-gradient-to-br from-emerald-500 via-green-600 to-cyan-500 rounded-xl flex items-center justify-center shadow-sm flex-shrink-0">
+                  <span className="text-white font-bold text-xs xs:text-sm">
+                    SL
+                  </span>
                 </div>
-                <div>
-                  <h1 className="text-xl font-bold tracking-tight">
+                <div className="min-w-0">
+                  <h1 className="text-lg xs:text-xl font-bold tracking-tight truncate">
                     SaloneHub
                   </h1>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground hidden xs:block">
                     Sierra Leone civic portal • fast, friendly, and official
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  className="btn-ghost px-3"
-                  onClick={() => setTourOpen(true)}
-                  title="Quick tour"
-                  aria-label="Open quick tour"
-                >
-                  ?
-                </button>
-                <LanguageSwitcher />
-                <ThemeToggle theme={theme} onCycle={cycleTheme} />
-                <SignOutButton />
+                {/* Desktop navigation */}
+                <div className="hidden sm:flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="btn-ghost px-3"
+                    onClick={() => setTourOpen(true)}
+                    title="Quick tour"
+                    aria-label="Open quick tour"
+                  >
+                    ?
+                  </button>
+                  <LanguageSwitcher />
+                  <ThemeToggle theme={theme} onCycle={cycleTheme} />
+                  <SignOutButton />
+                </div>
+
+                {/* Mobile menu */}
+                <MobileMenu theme={theme} onCycle={cycleTheme} />
               </div>
             </div>
           </div>

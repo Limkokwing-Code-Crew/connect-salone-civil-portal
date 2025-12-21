@@ -11,16 +11,50 @@ const languages = [
 export function LanguageSwitcher() {
   const { i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({
+    top: 0,
+    right: 0,
+  });
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const currentLanguage =
     languages.find((lang) => lang.code === i18n.language) || languages[0];
+
+  // Update dropdown position when opening
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      // Calculate right position
+      let right = viewportWidth - rect.right + window.scrollX;
+
+      // Adjust for mobile - if dropdown would go off screen, align to right edge
+      if (right < 0) {
+        right = 0;
+      }
+
+      // Calculate top position
+      let top = rect.bottom + window.scrollY;
+
+      // If dropdown would go below viewport, position above button
+      if (rect.bottom + 200 > viewportHeight) {
+        top = rect.top + window.scrollY - 200;
+      }
+
+      setDropdownPosition({ top, right });
+    }
+  }, [isOpen]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
         dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
+        !dropdownRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
       }
@@ -38,11 +72,14 @@ export function LanguageSwitcher() {
   return (
     <div className="relative" ref={dropdownRef}>
       <button
-        className="flex items-center gap-2 px-3 py-2 rounded-lg glass-surface hover:bg-white/70 dark:hover:bg-white/10 transition-colors"
+        ref={buttonRef}
+        className="flex items-center gap-2 px-2 xs:px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors min-w-0 shadow-sm"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span>{currentLanguage.flag}</span>
-        <span className="text-sm font-medium">{currentLanguage.name}</span>
+        <span className="text-base xs:text-lg">{currentLanguage.flag}</span>
+        <span className="text-xs xs:text-sm font-medium truncate">
+          {currentLanguage.name}
+        </span>
         <svg
           className="w-4 h-4"
           fill="none"
@@ -58,39 +95,43 @@ export function LanguageSwitcher() {
         </svg>
       </button>
 
-      <div
-        className={`absolute right-0 mt-1 w-48 glass-surface rounded-lg shadow-lg transition-all duration-200 z-50 ${
-          isOpen ? "opacity-100 visible" : "opacity-0 invisible"
-        }`}
-      >
-        {languages.map((language) => (
-          <button
-            key={language.code}
-            onClick={() => {
-              i18n.changeLanguage(language.code);
-              setIsOpen(false);
-            }}
-            className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-white/50 dark:hover:bg-white/10 transition-colors"
-          >
-            <span>{language.flag}</span>
-            <span>{language.name}</span>
+      {isOpen && (
+        <div
+          className="fixed w-48 xs:w-44 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl transition-all duration-200 z-[100] max-w-[calc(100vw-2rem)]"
+          style={{
+            top: `${dropdownPosition.top}px`,
+            right: `${dropdownPosition.right}px`,
+          }}
+        >
+          {languages.map((language) => (
+            <button
+              key={language.code}
+              onClick={() => {
+                i18n.changeLanguage(language.code);
+                setIsOpen(false);
+              }}
+              className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-left text-gray-900 dark:text-gray-100"
+            >
+              <span>{language.flag}</span>
+              <span>{language.name}</span>
 
-            {i18n.language === language.code && (
-              <svg
-                className="w-4 h-4 ml-auto"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            )}
-          </button>
-        ))}
-      </div>
+              {i18n.language === language.code && (
+                <svg
+                  className="w-4 h-4 ml-auto"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

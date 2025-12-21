@@ -3,6 +3,15 @@ export default {
   darkMode: ["class"],
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
+    screens: {
+      xs: "320px",
+      sm: "640px",
+      md: "768px",
+      lg: "1024px",
+      xl: "1280px",
+      "2xl": "1536px",
+      "3xl": "1920px",
+    },
     extend: {
       colors: {
         border: "hsl(var(--border))",
@@ -26,11 +35,26 @@ export default {
         },
       },
       spacing: {
+        18: "4.5rem",
+        88: "22rem",
+        112: "28rem",
+        128: "32rem",
         section: "2rem",
         container: "1rem",
       },
       borderRadius: {
         container: "0.75rem",
+      },
+      maxWidth: {
+        "8xl": "88rem",
+        "9xl": "96rem",
+      },
+      fontSize: {
+        "2xs": ["0.625rem", { lineHeight: "0.75rem" }],
+        "3xl": ["1.875rem", { lineHeight: "2.25rem" }],
+        "4xl": ["2.25rem", { lineHeight: "2.5rem" }],
+        "5xl": ["3rem", { lineHeight: "1" }],
+        "6xl": ["3.75rem", { lineHeight: "1" }],
       },
       keyframes: {
         float: {

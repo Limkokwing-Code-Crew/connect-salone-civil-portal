@@ -91,7 +91,7 @@ export function Modal(props: {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 xs:p-4"
       role="dialog"
       aria-modal="true"
       aria-label={props.title}
@@ -105,22 +105,24 @@ export function Modal(props: {
         ref={dialogRef}
         tabIndex={-1}
         className={cn(
-          "relative w-full max-w-xl max-h-[90vh] glass-card card-hover p-6 animate-fade-in outline-none flex flex-col",
+          "relative w-full max-w-sm xs:max-w-xl max-h-[85vh] xs:max-h-[90vh] glass-card card-hover p-4 xs:p-6 animate-fade-in outline-none flex flex-col mx-2 xs:mx-0",
           props.className,
         )}
       >
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-bold tracking-tight">{props.title}</h2>
+        <div className="flex items-start justify-between gap-2 xs:gap-4">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-lg xs:text-xl font-bold tracking-tight pr-2">
+              {props.title}
+            </h2>
             {props.description ? (
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-xs xs:text-sm text-muted-foreground">
                 {props.description}
               </p>
             ) : null}
           </div>
           <button
             type="button"
-            className="btn-ghost px-3"
+            className="btn-ghost px-2 xs:px-3 flex-shrink-0"
             onClick={() => props.onOpenChange(false)}
             aria-label="Close"
             title="Close"
