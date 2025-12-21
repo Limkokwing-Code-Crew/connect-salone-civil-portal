@@ -3,19 +3,91 @@ import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { api } from "./_generated/api";
 
+// Fallback responses when OpenAI is not available
+function getFallbackResponse(message: string): string {
+  const lowerMessage = message.toLowerCase().trim();
+
+  // Common greetings
+  if (
+    lowerMessage === "hy" ||
+    lowerMessage === "hi" ||
+    lowerMessage === "hello"
+  ) {
+    return "Hello! I'm here to help you with Sierra Leone government services. How can I assist you today?";
+  }
+
+  // Service-related queries
+  if (lowerMessage.includes("passport") || lowerMessage.includes("travel")) {
+    return "For passport services, you'll need to visit the Immigration Office in Freetown. Required documents typically include: birth certificate, national ID, passport photos, and completed application forms. Processing time is usually 2-4 weeks.";
+  }
+
+  if (lowerMessage.includes("driver") || lowerMessage.includes("license")) {
+    return "Driver's licenses are issued by the Road Transport Authority. You'll need to complete an application, provide identification, pass a vision test, and complete both written and practical driving tests.";
+  }
+
+  if (lowerMessage.includes("business") || lowerMessage.includes("register")) {
+    return "Business registration is handled by the Ministry of Trade and Industry. You'll need to submit business name, address, ownership details, and pay the registration fee. Processing typically takes 5-10 business days.";
+  }
+
+  if (lowerMessage.includes("birth") || lowerMessage.includes("certificate")) {
+    return "Birth certificates are issued by the National Civil Registration Authority. Required documents include: proof of birth, parents' ID documents, and completed application form. Processing time is usually 1-2 weeks.";
+  }
+
+  // List of services query
+  if (
+    lowerMessage.includes("list") ||
+    lowerMessage.includes("services") ||
+    lowerMessage.includes("available")
+  ) {
+    return `Here are the main Sierra Leone government services available:
+
+🏛️ **Immigration Services:**
+- Passport applications and renewals
+- Visa processing
+- Work permits
+- Residence permits
+
+🚗 **Transport Services:**
+- Driver's license applications
+- Vehicle registration
+- Road tax payments
+
+📋 **Civil Registration:**
+- Birth certificates
+- Marriage certificates
+- Death certificates
+- National ID cards
+
+💼 **Business & Trade:**
+- Business registration
+- Trade licenses
+- Import/export permits
+- Tax registration
+
+🏥 **Health Services:**
+- Health certificates
+- Medical licenses
+- Public health services
+
+🏛️ **Other Services:**
+- Police clearances
+- Land title registration
+- Educational certificates
+- Social welfare services
+
+For specific requirements, fees, and processing times, please visit the relevant ministry office or check our Service Directory.`;
+  }
+
+  // Default fallback
+  return "I'm currently experiencing technical difficulties. For specific service information, please contact the relevant government ministry directly, or visit their office in person. You can find contact details in our Service Directory.";
+}
+
 export const sendMessage = action({
   args: {
     message: v.string(),
     sessionId: v.string(),
   },
   handler: async (ctx, args) => {
-    // Get AI response using Convex OpenAI integration
-    const OpenAI = (await import("openai")).default;
-    const openai = new OpenAI({
-      baseURL: process.env.CONVEX_OPENAI_BASE_URL,
-      apiKey: process.env.CONVEX_OPENAI_API_KEY,
-    });
-
     // Rate Limiting: Check last message time
     const lastMessage = await ctx.runQuery(api.chat.getLastMessage, {
       sessionId: args.sessionId,
@@ -24,24 +96,20 @@ export const sendMessage = action({
       throw new Error("Whoa, slow down! Please wait a few seconds.");
     }
 
-    // Check if OpenAI credentials are configured
-    if (!process.env.CONVEX_OPENAI_API_KEY) {
-      const errorResponse = "OpenAI API key is not configured. Please set CONVEX_OPENAI_API_KEY in your Convex Dashboard environment variables.";
-      console.error("DEBUG: OpenAI credentials missing");
-
-      await ctx.runMutation(api.chat.saveMessage, {
-        message: args.message,
-        response: errorResponse,
-        sessionId: args.sessionId,
-      });
-
-      return errorResponse;
-    }
+    // Get AI response using Groq (free alternative to OpenAI)
+    const OpenAI = (await import("openai")).default;
+    const openai = new OpenAI({
+      baseURL: "https://api.groq.com/openai/v1",
+      apiKey: process.env.GROQ_API_KEY || process.env.OPENAI_API_KEY,
+    });
 
     try {
       console.log(`DEBUG: Processing message from session ${args.sessionId}`);
       // Check for specific greeting pattern
-      if (args.message.toLowerCase().trim() === "hy" || args.message.toLowerCase().trim() === "hi") {
+      if (
+        args.message.toLowerCase().trim() === "hy" ||
+        args.message.toLowerCase().trim() === "hi"
+      ) {
         const greetingResponse = "hi";
         console.log("DEBUG: Greeting detected, skipping OpenAI");
 
@@ -57,7 +125,7 @@ export const sendMessage = action({
 
       console.log("DEBUG: Calling OpenAI...");
       const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: "llama-3.1-8b-instant",
         messages: [
           {
             role: "system",
@@ -102,7 +170,25 @@ Available services include passport applications, business registration, driver'
       const errorMessage = error?.message || String(error);
       console.error("DEBUG: Error message:", errorMessage);
 
-      const fallbackResponse = `Error: ${errorMessage}. (This message is for debugging. Please try again or contact support.)`;
+      // Check if it's an OpenAI quota/credit issue
+      if (
+        errorMessage.includes("no requests remaining") ||
+        errorMessage.includes("quota") ||
+        errorMessage.includes("401")
+      ) {
+        const fallbackResponse =
+          "I'm currently experiencing technical difficulties with the AI service. Please try again later or contact the relevant government ministry directly for assistance with your inquiry.";
+
+        await ctx.runMutation(api.chat.saveMessage, {
+          message: args.message,
+          response: fallbackResponse,
+          sessionId: args.sessionId,
+        });
+
+        return fallbackResponse;
+      }
+
+      const fallbackResponse = getFallbackResponse(args.message);
 
       // Save the conversation with fallback response
       try {
@@ -128,7 +214,9 @@ export const saveMessage = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    console.log(`DEBUG: saveMessage - userId: ${userId}, sessionId: ${args.sessionId}`);
+    console.log(
+      `DEBUG: saveMessage - userId: ${userId}, sessionId: ${args.sessionId}`,
+    );
 
     try {
       await ctx.db.insert("chatMessages", {

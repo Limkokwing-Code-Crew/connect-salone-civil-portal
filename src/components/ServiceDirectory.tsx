@@ -51,7 +51,6 @@ export function ServiceDirectory() {
   });
 
   const agencies = useQuery(api.services.getAgencies);
-  const regions = useQuery(api.services.getRegions);
 
   const filtered = useMemo(() => {
     const list = services ?? [];

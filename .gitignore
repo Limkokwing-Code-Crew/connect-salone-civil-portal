@@ -25,3 +25,11 @@ dist-ssr
 
 # Ignored for the template, you probably want to remove it:
 package-lock.json
+
+# API Keys and secrets - never commit these
+.env
+.env.example
+SETUP_INSTRUCTIONS.md
+setup-ai.sh
+*temp*
+*utf8*
