@@ -8,9 +8,11 @@
  * @module
  */
 
+import type * as admin from "../admin.js";
 import type * as auth from "../auth.js";
 import type * as chat from "../chat.js";
 import type * as clear from "../clear.js";
+import type * as diagnostic from "../diagnostic.js";
 import type * as http from "../http.js";
 import type * as representatives from "../representatives.js";
 import type * as router from "../router.js";
@@ -24,9 +26,11 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  admin: typeof admin;
   auth: typeof auth;
   chat: typeof chat;
   clear: typeof clear;
+  diagnostic: typeof diagnostic;
   http: typeof http;
   representatives: typeof representatives;
   router: typeof router;

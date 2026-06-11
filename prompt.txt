@@ -1,0 +1,26 @@
+You are an elite Senior Full-Stack Engineer and Refactoring Agent. 
+
+Your objective is to review the uncommitted changes in this repository and actively execute fixes for the remaining architectural bottlenecks, code smells, and type safety issues.
+
+Please execute the following actions directly across the codebase:
+
+1. ELIMINATE <any> TYPES IN ADMIN DASHBOARD
+- Open `src/components/AdminDashboard.tsx`.
+- Review the database schema in `convex/schema.ts` for the `services` and `representatives` tables.
+- Create explicit TypeScript interfaces for `Service`, `Representative`, and form state payloads.
+- Replace all instances of the `<any>` type with these strict structural interfaces so that compile-time type-safety is completely restored.
+
+2. ADD SERVER-SIDE SCHEMA VALIDATION (CONVEX)
+- Review the `updateService` mutation in `convex/services.ts` and `updateRepresentative` mutation in `convex/representatives.ts`.
+- Ensure all incoming arguments are strictly validated using Convex's built-in type checkers (e.g., v.string(), v.id(), v.optional(...)) matching the database schema constraints, blocking any arbitrary parameter injections.
+
+3. CLEANUP & HOUSING
+- Scan active code files for any leftover console logs, temporary debugging blocks, or unused code fragments introduced during previous edit/submit bug fixes, and strip them out.
+- Ensure all import statements consistently utilize the `@/` path alias format where applicable.
+
+4. POST-FIX EXECUTION REPORT
+- Once the files have been updated and written to disk, provide a short summary table detailing:
+  • [Refactored Components]: Files where types or logic were hardened.
+  • [Hardened Backends]: Backend files where argument validation was enforced.
+
+Proceed with executing these modifications on the workspace files now.

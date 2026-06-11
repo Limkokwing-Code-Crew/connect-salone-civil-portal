@@ -11,50 +11,15 @@ const languages = [
 export function LanguageSwitcher() {
   const { i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
-  const [dropdownPosition, setDropdownPosition] = useState({
-    top: 0,
-    right: 0,
-  });
-  const buttonRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const currentLanguage =
     languages.find((lang) => lang.code === i18n.language) || languages[0];
 
-  // Update dropdown position when opening
-  useEffect(() => {
-    if (isOpen && buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
-
-      // Calculate right position
-      let right = viewportWidth - rect.right + window.scrollX;
-
-      // Adjust for mobile - if dropdown would go off screen, align to right edge
-      if (right < 0) {
-        right = 0;
-      }
-
-      // Calculate top position
-      let top = rect.bottom + window.scrollY;
-
-      // If dropdown would go below viewport, position above button
-      if (rect.bottom + 200 > viewportHeight) {
-        top = rect.top + window.scrollY - 200;
-      }
-
-      setDropdownPosition({ top, right });
-    }
-  }, [isOpen]);
-
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
         dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node) &&
-        buttonRef.current &&
-        !buttonRef.current.contains(event.target as Node)
+        !dropdownRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
       }
@@ -72,7 +37,6 @@ export function LanguageSwitcher() {
   return (
     <div className="relative" ref={dropdownRef}>
       <button
-        ref={buttonRef}
         className="flex items-center gap-2 px-2 xs:px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors min-w-0 shadow-sm"
         onClick={() => setIsOpen(!isOpen)}
       >
@@ -96,13 +60,7 @@ export function LanguageSwitcher() {
       </button>
 
       {isOpen && (
-        <div
-          className="fixed w-48 xs:w-44 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl transition-all duration-200 z-[100] max-w-[calc(100vw-2rem)]"
-          style={{
-            top: `${dropdownPosition.top}px`,
-            right: `${dropdownPosition.right}px`,
-          }}
-        >
+        <div className="absolute top-full right-0 mt-1 w-44 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-[100]">
           {languages.map((language) => (
             <button
               key={language.code}

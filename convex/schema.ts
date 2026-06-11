@@ -59,6 +59,10 @@ const applicationTables = {
   })
     .index("by_session", ["sessionId"])
     .index("by_user", ["userId"]),
+
+  admins: defineTable({
+    userId: v.id("users"),
+  }).index("by_userId", ["userId"]),
 };
 
 export default defineSchema({

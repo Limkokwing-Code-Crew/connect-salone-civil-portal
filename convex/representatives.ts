@@ -81,27 +81,6 @@ export const createRepresentative = mutation({
   },
 });
 
-export const updateRepresentative = mutation({
-  args: {
-    id: v.id("representatives"),
-    name: v.string(),
-    role: v.optional(v.string()),
-    district: v.string(),
-    constituency: v.optional(v.string()),
-    phone: v.string(),
-    email: v.string(),
-    title: v.optional(v.string()),
-    ministry: v.optional(v.string()),
-    office: v.optional(v.string()),
-    officeAddress: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    const { id, ...representativeData } = args;
-    await ctx.db.patch(id, representativeData);
-    return id;
-  },
-});
-
 export const deleteRepresentative = mutation({
   args: {
     id: v.id("representatives"),

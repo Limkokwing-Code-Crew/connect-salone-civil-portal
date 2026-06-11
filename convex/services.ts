@@ -54,15 +54,6 @@ export const getAgencies = query({
   },
 });
 
-export const getRegions = query({
-  args: {},
-  handler: async (ctx) => {
-    const services = await ctx.db.query("services").collect();
-    const regions = [...new Set(services.map((s) => s.region))];
-    return regions.sort();
-  },
-});
-
 export const createService = mutation({
   args: {
     name: v.string(),

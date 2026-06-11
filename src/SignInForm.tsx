@@ -1,4 +1,3 @@
-"use client";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -9,7 +8,7 @@ export function SignInForm() {
   const [submitting, setSubmitting] = useState(false);
 
   return (
-    <div className="w-full">
+    <div className="w-full space-y-4">
       <form
         className="flex flex-col gap-3"
         onSubmit={(e) => {
@@ -37,6 +36,7 @@ export function SignInForm() {
           type="email"
           name="email"
           placeholder="Email"
+          autoComplete="email"
           required
         />
         <input
@@ -44,12 +44,13 @@ export function SignInForm() {
           type="password"
           name="password"
           placeholder="Password"
+          autoComplete={flow === "signIn" ? "current-password" : "new-password"}
           required
         />
         <button className="auth-button" type="submit" disabled={submitting}>
           {flow === "signIn" ? "Sign in" : "Sign up"}
         </button>
-        <div className="text-center text-sm text-secondary">
+        <div className="text-center text-sm text-muted-foreground">
           <span>
             {flow === "signIn"
               ? "Don't have an account? "
@@ -64,10 +65,10 @@ export function SignInForm() {
           </button>
         </div>
       </form>
-      <div className="flex items-center justify-center my-3">
-        <hr className="my-4 grow border-gray-200" />
-        <span className="mx-4 text-secondary">or</span>
-        <hr className="my-4 grow border-gray-200" />
+      <div className="flex items-center justify-center">
+        <hr className="flex-1 border-gray-300 dark:border-gray-600" />
+        <span className="px-4 text-sm text-muted-foreground">or</span>
+        <hr className="flex-1 border-gray-300 dark:border-gray-600" />
       </div>
       <button className="auth-button" onClick={() => void signIn("anonymous")}>
         Sign in anonymously

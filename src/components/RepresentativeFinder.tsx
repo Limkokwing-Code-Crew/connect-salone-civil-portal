@@ -109,7 +109,7 @@ export function RepresentativeFinder() {
 
       {/* Representatives List */}
       {representatives?.length === 0 &&
-        (searchTerm || selectedDistrict || selectedRole) ? (
+      (searchTerm || selectedDistrict || selectedRole) ? (
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -124,15 +124,15 @@ export function RepresentativeFinder() {
           </p>
         </motion.div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {representatives?.map((rep, index) => (
             <motion.div
               key={rep._id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              whileHover={{ y: -8, scale: 1.02 }}
-              className="glass-card card-hover p-6"
+              whileHover={{ y: -4, scale: 1.01 }}
+              className="glass-card card-hover p-4 sm:p-6"
             >
               <div className="flex items-start gap-4 mb-4">
                 <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 via-green-600 to-cyan-500 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
