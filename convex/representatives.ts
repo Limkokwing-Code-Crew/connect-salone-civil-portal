@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { paginationOptsValidator } from "convex/server";
 
 export const searchRepresentatives = query({
   args: {
@@ -57,9 +58,56 @@ export const getRoles = query({
 });
 
 export const getAllRepresentatives = query({
-  args: {},
-  handler: async (ctx) => {
-    return await ctx.db.query("representatives").collect();
+  args: {
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.query("representatives").paginate(args.paginationOpts);
+  },
+});
+
+export const getRepresentativesPaginated = query({
+  args: {
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.query("representatives").paginate(args.paginationOpts);
+  },
+});
+
+export const searchRepresentativesPaginated = query({
+  args: {
+    searchTerm: v.optional(v.string()),
+    district: v.optional(v.string()),
+    role: v.optional(v.string()),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    const { paginationOpts, searchTerm, district, role } = args;
+    if (searchTerm) {
+      return await ctx.db
+        .query("representatives")
+        .withSearchIndex("search_representatives", (q) => {
+          let searchQuery = q.search("name", searchTerm);
+          if (district) searchQuery = searchQuery.eq("district", district);
+          if (role) searchQuery = searchQuery.eq("role", role);
+          return searchQuery;
+        })
+        .paginate(paginationOpts);
+    }
+    if (district) {
+      return await ctx.db
+        .query("representatives")
+        .withIndex("by_district", (q) => q.eq("district", district))
+        .paginate(paginationOpts);
+    }
+    if (role) {
+      return await ctx.db
+        .query("representatives")
+        .withIndex("by_role", (q) => q.eq("role", role))
+        .paginate(paginationOpts);
+    }
+    return await ctx.db.query("representatives").paginate(paginationOpts);
   },
 });
 

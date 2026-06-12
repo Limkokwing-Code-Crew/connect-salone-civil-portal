@@ -1,15 +1,9 @@
 import { Authenticated, Unauthenticated, useQuery } from "convex/react";
-import type { ReactNode } from "react";
+import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
 import { api } from "../convex/_generated/api";
 import { SignInForm } from "./SignInForm";
 import { SignOutButton } from "./SignOutButton";
 import { Toaster } from "sonner";
-import { ChatInterface } from "./components/ChatInterface";
-import { ServiceDirectory } from "./components/ServiceDirectory";
-import { RepresentativeFinder } from "./components/RepresentativeFinder";
-import { NewsSection } from "@/components/NewsSection";
-import { AdminDashboard } from "@/components/AdminDashboard";
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LiquidBackground } from "@/components/LiquidBackground";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -20,6 +14,30 @@ import { LanguageSwitcher } from "./components/LanguageSwitcher";
 import { MobileMenu } from "./components/MobileMenu";
 import { useTheme } from "@/hooks/useTheme";
 import { cn } from "@/lib/utils";
+
+const AdminDashboard = lazy(() =>
+  import("@/components/AdminDashboard").then((m) => ({
+    default: m.AdminDashboard,
+  })),
+);
+const ChatInterface = lazy(() =>
+  import("./components/ChatInterface").then((m) => ({
+    default: m.ChatInterface,
+  })),
+);
+const ServiceDirectory = lazy(() =>
+  import("./components/ServiceDirectory").then((m) => ({
+    default: m.ServiceDirectory,
+  })),
+);
+const RepresentativeFinder = lazy(() =>
+  import("./components/RepresentativeFinder").then((m) => ({
+    default: m.RepresentativeFinder,
+  })),
+);
+const NewsSection = lazy(() =>
+  import("@/components/NewsSection").then((m) => ({ default: m.NewsSection })),
+);
 
 const TOUR_SEEN_KEY = "salone_hub_tour_seen";
 
@@ -116,7 +134,15 @@ export default function App() {
       </header>
 
       <main className="flex-1">
-        <Content activeTab={activeTab} setActiveTab={setActiveTab} t={t} />
+        <Suspense
+          fallback={
+            <div className="flex justify-center items-center min-h-[50vh]">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+            </div>
+          }
+        >
+          <Content activeTab={activeTab} setActiveTab={setActiveTab} t={t} />
+        </Suspense>
       </main>
 
       <Footer />

@@ -1,10 +1,13 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { paginationOptsValidator } from "convex/server";
 
 export const getAllServices = query({
-  args: {},
-  handler: async (ctx) => {
-    return await ctx.db.query("services").collect();
+  args: {
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.query("services").paginate(args.paginationOpts);
   },
 });
 
@@ -42,6 +45,51 @@ export const searchServices = query({
     } else {
       return await ctx.db.query("services").collect();
     }
+  },
+});
+
+export const getServicesPaginated = query({
+  args: {
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.query("services").paginate(args.paginationOpts);
+  },
+});
+
+export const searchServicesPaginated = query({
+  args: {
+    searchTerm: v.optional(v.string()),
+    agency: v.optional(v.string()),
+    region: v.optional(v.string()),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    const { paginationOpts, searchTerm, agency, region } = args;
+    if (searchTerm) {
+      return await ctx.db
+        .query("services")
+        .withSearchIndex("search_services", (q) => {
+          let searchQuery = q.search("name", searchTerm);
+          if (agency) searchQuery = searchQuery.eq("agency", agency);
+          if (region) searchQuery = searchQuery.eq("region", region);
+          return searchQuery;
+        })
+        .paginate(paginationOpts);
+    }
+    if (agency) {
+      return await ctx.db
+        .query("services")
+        .withIndex("by_agency", (q) => q.eq("agency", agency))
+        .paginate(paginationOpts);
+    }
+    if (region) {
+      return await ctx.db
+        .query("services")
+        .withIndex("by_region", (q) => q.eq("region", region))
+        .paginate(paginationOpts);
+    }
+    return await ctx.db.query("services").paginate(paginationOpts);
   },
 });
 

@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, usePaginatedQuery } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "../../convex/_generated/api";
 import { motion } from "framer-motion";
+import type { Doc } from "../../convex/_generated/dataModel";
 import {
   LogOut,
   Edit,
@@ -16,8 +17,11 @@ import {
 
 export function AdminDashboard() {
   const { signOut } = useAuthActions();
-  const [editingService, setEditingService] = useState<any>(null);
-  const [editingRepresentative, setEditingRepresentative] = useState<any>(null);
+  const [editingService, setEditingService] = useState<Doc<"services"> | null>(
+    null,
+  );
+  const [editingRepresentative, setEditingRepresentative] =
+    useState<Doc<"representatives"> | null>(null);
   const [activeTab, setActiveTab] = useState<"services" | "representatives">(
     "services",
   );
@@ -49,12 +53,32 @@ export function AdminDashboard() {
   });
 
   const isAdmin = useQuery(api.admin.isAdmin);
-  const services = useQuery(api.services.getAllServices);
-  const representatives = useQuery(api.representatives.getAllRepresentatives);
+  const {
+    results: services,
+    status: servicesStatus,
+    loadMore: loadMoreServices,
+  } = usePaginatedQuery(
+    api.services.getServicesPaginated,
+    {},
+    { initialNumItems: 20 },
+  );
+  const {
+    results: representatives,
+    status: repsStatus,
+    loadMore: loadMoreReps,
+  } = usePaginatedQuery(
+    api.representatives.getRepresentativesPaginated,
+    {},
+    { initialNumItems: 20 },
+  );
   const saveServiceMutation = useMutation(api.services.createService);
+  const updateServiceMutation = useMutation(api.services.updateService);
   const deleteServiceMutation = useMutation(api.services.deleteService);
   const saveRepresentativeMutation = useMutation(
     api.representatives.createRepresentative,
+  );
+  const updateRepresentativeMutation = useMutation(
+    api.representatives.updateRepresentative,
   );
   const deleteRepresentativeMutation = useMutation(
     api.representatives.deleteRepresentative,
