@@ -43,8 +43,9 @@ export function SignInForm() {
           className="auth-input-field"
           type="password"
           name="password"
-          placeholder="Password"
+          placeholder={flow === "signIn" ? "Password" : "Password (min 8 chars)"}
           autoComplete={flow === "signIn" ? "current-password" : "new-password"}
+          minLength={8}
           required
         />
         <button className="auth-button" type="submit" disabled={submitting}>

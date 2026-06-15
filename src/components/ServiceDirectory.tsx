@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useQuery, usePaginatedQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Modal } from "@/components/Modal";
+import { useDebounce } from "@/hooks/useDebounce";
+import { Skeleton } from "@/components/Skeleton";
 import { motion } from "framer-motion";
 import {
   Search,
@@ -44,6 +46,10 @@ export function ServiceDirectory() {
     null,
   );
 
+  const debouncedSearch = useDebounce(searchTerm, 300);
+  const debouncedAgency = useDebounce(selectedAgency, 300);
+  const debouncedRegion = useDebounce(selectedRegion, 300);
+
   const {
     results: services,
     status,
@@ -51,9 +57,9 @@ export function ServiceDirectory() {
   } = usePaginatedQuery(
     api.services.searchServicesPaginated,
     {
-      searchTerm: searchTerm || undefined,
-      agency: selectedAgency || undefined,
-      region: selectedRegion || undefined,
+      searchTerm: debouncedSearch || undefined,
+      agency: debouncedAgency || undefined,
+      region: debouncedRegion || undefined,
     },
     { initialNumItems: 12 },
   );
@@ -71,32 +77,23 @@ export function ServiceDirectory() {
 
   if (status === "LoadingFirstPage") {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="glass-card card-hover p-8 text-center"
-      >
-        <div className="text-6xl mb-4">📋</div>
-        <h3 className="text-2xl font-bold tracking-tight mb-2">
-          Service Directory
-        </h3>
-        <p className="text-muted-foreground mb-6">
-          Browse verified government services, fees, and requirements.
-        </p>
-        <div className="flex flex-wrap justify-center gap-2 mb-6">
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full glass text-sm">
-            <Check size={16} className="text-green-400" />
-            <span>Verified data</span>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full glass text-sm">
-            <Clock size={16} className="text-yellow-400" />
-            <span>Real-time updates</span>
-          </div>
+      <div className="space-y-6">
+        <Skeleton className="h-32 w-full" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="glass-card p-4 sm:p-6 space-y-3">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+              <div className="grid grid-cols-2 gap-3">
+                <Skeleton className="h-10" />
+                <Skeleton className="h-10" />
+              </div>
+              <Skeleton className="h-10 w-full rounded-xl" />
+            </div>
+          ))}
         </div>
-        <div className="text-sm text-muted-foreground">
-          Loading services from database...
-        </div>
-      </motion.div>
+      </div>
     );
   }
 
@@ -161,7 +158,9 @@ export function ServiceDirectory() {
           animate={{ opacity: 1, scale: 1 }}
           className="glass-card card-hover p-8 text-center"
         >
-          <div className="text-4xl mb-4">🔍</div>
+          <svg className="w-16 h-16 mx-auto mb-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+          </svg>
           <h3 className="text-xl font-bold tracking-tight mb-2">
             No Services Found
           </h3>

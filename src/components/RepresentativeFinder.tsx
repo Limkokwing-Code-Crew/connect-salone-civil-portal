@@ -1,13 +1,19 @@
 import { useState } from "react";
 import { useQuery, usePaginatedQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { useDebounce } from "@/hooks/useDebounce";
+import { Skeleton } from "@/components/Skeleton";
 import { motion } from "framer-motion";
-import { Search, Phone, Mail, MapPin, Users, Building } from "lucide-react";
+import { Search, Phone, Mail, MapPin, Building } from "lucide-react";
 
 export function RepresentativeFinder() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
+
+  const debouncedSearch = useDebounce(searchTerm, 300);
+  const debouncedDistrict = useDebounce(selectedDistrict, 300);
+  const debouncedRole = useDebounce(selectedRole, 300);
 
   const {
     results: representatives,
@@ -16,9 +22,9 @@ export function RepresentativeFinder() {
   } = usePaginatedQuery(
     api.representatives.searchRepresentativesPaginated,
     {
-      searchTerm: searchTerm || undefined,
-      district: selectedDistrict || undefined,
-      role: selectedRole || undefined,
+      searchTerm: debouncedSearch || undefined,
+      district: debouncedDistrict || undefined,
+      role: debouncedRole || undefined,
     },
     { initialNumItems: 12 },
   );
@@ -28,32 +34,25 @@ export function RepresentativeFinder() {
 
   if (status === "LoadingFirstPage") {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="glass-card card-hover p-8 text-center"
-      >
-        <div className="text-6xl mb-4">👥</div>
-        <h3 className="text-2xl font-bold tracking-tight mb-2">
-          Representative Finder
-        </h3>
-        <p className="text-muted-foreground mb-6">
-          Find government officials and representatives across Sierra Leone.
-        </p>
-        <div className="flex flex-wrap justify-center gap-2 mb-6">
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full glass text-sm">
-            <Users size={16} className="text-blue-400" />
-            <span>20+ Officials</span>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full glass text-sm">
-            <MapPin size={16} className="text-green-400" />
-            <span>All Districts</span>
-          </div>
+      <div className="space-y-6">
+        <Skeleton className="h-32 w-full" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="glass-card p-4 sm:p-6 space-y-3">
+              <div className="flex items-start gap-4 mb-4">
+                <Skeleton className="h-16 w-16 rounded-2xl" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-4 w-1/3" />
+                </div>
+              </div>
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="h-10 w-full rounded-xl" />
+            </div>
+          ))}
         </div>
-        <div className="text-sm text-muted-foreground">
-          Loading representatives from database...
-        </div>
-      </motion.div>
+      </div>
     );
   }
 
@@ -118,7 +117,9 @@ export function RepresentativeFinder() {
           animate={{ opacity: 1, scale: 1 }}
           className="glass-card card-hover p-8 text-center"
         >
-          <div className="text-4xl mb-4">🔍</div>
+          <svg className="w-16 h-16 mx-auto mb-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+          </svg>
           <h3 className="text-xl font-bold tracking-tight mb-2">
             No Representatives Found
           </h3>

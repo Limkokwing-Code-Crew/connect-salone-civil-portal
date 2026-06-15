@@ -4,7 +4,9 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "../../convex/_generated/api";
 import { motion } from "framer-motion";
 import type { Doc } from "../../convex/_generated/dataModel";
+import { downloadCsv } from "@/lib/csv";
 import {
+  Download,
   LogOut,
   Edit,
   Trash2,
@@ -83,6 +85,7 @@ export function AdminDashboard() {
   const deleteRepresentativeMutation = useMutation(
     api.representatives.deleteRepresentative,
   );
+  const auditLog = useMutation(api.adminLogs.log);
 
   const handleLogout = () => {
     if (window.confirm("Are you sure you want to logout?")) {
@@ -193,8 +196,21 @@ export function AdminDashboard() {
         id: editingRepresentative._id,
         ...repFormData,
       });
+      void auditLog({
+        action: "update",
+        entityType: "representatives",
+        entityId: editingRepresentative._id,
+        details: repFormData.name,
+      });
     } else {
-      saveRepresentativeMutation(repFormData);
+      saveRepresentativeMutation(repFormData).then((id) => {
+        void auditLog({
+          action: "create",
+          entityType: "representatives",
+          entityId: id,
+          details: repFormData.name,
+        });
+      });
     }
     resetRepForm();
   };
@@ -218,8 +234,21 @@ export function AdminDashboard() {
     };
     if (editingService) {
       updateServiceMutation({ id: editingService._id, ...serviceData });
+      void auditLog({
+        action: "update",
+        entityType: "services",
+        entityId: editingService._id,
+        details: serviceData.name,
+      });
     } else {
-      saveServiceMutation(serviceData);
+      saveServiceMutation(serviceData).then((id) => {
+        void auditLog({
+          action: "create",
+          entityType: "services",
+          entityId: id,
+          details: serviceData.name,
+        });
+      });
     }
     resetForm();
   };
@@ -424,6 +453,30 @@ export function AdminDashboard() {
             <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
               <Users size={20} className="text-blue-400" />
               Services ({services?.length || 0})
+              {services && services.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    downloadCsv(
+                      "services.csv",
+                      ["name", "agency", "fee", "processingTime", "region", "contacts"],
+                      services.map((s) => ({
+                        name: s.name,
+                        agency: s.agency,
+                        fee: s.fee,
+                        processingTime: s.processingTime,
+                        region: s.region,
+                        contacts: s.contacts,
+                      })),
+                    )
+                  }
+                  className="ml-auto p-1.5 rounded-lg glass-hover text-muted-foreground hover:text-emerald-400"
+                  title="Export CSV"
+                  aria-label="Export services as CSV"
+                >
+                  <Download size={16} />
+                </button>
+              )}
             </h2>
             <div className="space-y-3 max-h-[600px] overflow-y-auto">
               {services?.map((service) => (
@@ -450,6 +503,7 @@ export function AdminDashboard() {
                       onClick={() => {
                         if (window.confirm("Delete this service?")) {
                           deleteServiceMutation({ id: service._id });
+                          void auditLog({ action: "delete", entityType: "services", entityId: service._id, details: service.name });
                         }
                       }}
                       className="p-2 rounded-lg glass-hover text-red-400"
@@ -607,6 +661,30 @@ export function AdminDashboard() {
             <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
               <UserCheck size={20} className="text-purple-400" />
               Representatives ({representatives?.length || 0})
+              {representatives && representatives.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    downloadCsv(
+                      "representatives.csv",
+                      ["name", "role", "district", "constituency", "phone", "email"],
+                      representatives.map((r) => ({
+                        name: r.name,
+                        role: r.role,
+                        district: r.district,
+                        constituency: r.constituency,
+                        phone: r.phone,
+                        email: r.email,
+                      })),
+                    )
+                  }
+                  className="ml-auto p-1.5 rounded-lg glass-hover text-muted-foreground hover:text-emerald-400"
+                  title="Export CSV"
+                  aria-label="Export representatives as CSV"
+                >
+                  <Download size={16} />
+                </button>
+              )}
             </h2>
             <div className="space-y-3 max-h-[600px] overflow-y-auto">
               {representatives?.map((representative) => (
@@ -639,6 +717,7 @@ export function AdminDashboard() {
                           deleteRepresentativeMutation({
                             id: representative._id,
                           });
+                          void auditLog({ action: "delete", entityType: "representatives", entityId: representative._id, details: representative.name });
                         }
                       }}
                       className="p-2 rounded-lg glass-hover text-red-400"

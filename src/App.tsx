@@ -1,6 +1,8 @@
 import { Authenticated, Unauthenticated, useQuery } from "convex/react";
 import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
+import { Helmet, HelmetProvider } from "react-helmet-async";
 import { api } from "../convex/_generated/api";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SignInForm } from "./SignInForm";
 import { SignOutButton } from "./SignOutButton";
 import { Toaster } from "sonner";
@@ -49,6 +51,13 @@ function IsAdmin({ children }: { children: ReactNode }) {
 
 export default function App() {
   const { t } = useTranslation();
+
+  useEffect(() => {
+    if (typeof import.meta.env.VITE_CONVEX_URL !== "string" || !import.meta.env.VITE_CONVEX_URL) {
+      console.error("Missing VITE_CONVEX_URL environment variable");
+    }
+  }, []);
+
   const [activeTab, setActiveTab] = useState<
     "chat" | "services" | "representatives" | "news" | "admin"
   >("chat");
@@ -77,7 +86,11 @@ export default function App() {
   };
 
   return (
+    <HelmetProvider>
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>{activeTab === "chat" ? "AI Assistant" : activeTab === "services" ? "Service Directory" : activeTab === "representatives" ? "Representative Finder" : activeTab === "news" ? "News" : "Admin"} — SaloneHub</title>
+      </Helmet>
       <LiquidBackground />
 
       <header className="sticky top-0 z-10">
@@ -204,6 +217,7 @@ export default function App() {
 
       <Toaster theme={resolvedTheme} richColors closeButton />
     </div>
+    </HelmetProvider>
   );
 }
 
@@ -231,7 +245,9 @@ function Content({
   if (activeTab === "admin") {
     return (
       <div className="max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
-        <AdminDashboard />
+        <ErrorBoundary name="AdminDashboard">
+          <AdminDashboard />
+        </ErrorBoundary>
       </div>
     );
   }
@@ -271,8 +287,10 @@ function Content({
         </div>
 
         {/* Navigation Tabs */}
-        <div className="glass-card p-1.5 mb-4 sm:mb-6 flex gap-1 overflow-x-auto no-scrollbar">
+        <div className="glass-card p-1.5 mb-4 sm:mb-6 flex gap-1 overflow-x-auto no-scrollbar" role="tablist" aria-label="Main navigation">
           <button
+            role="tab"
+            aria-selected={activeTab === "chat"}
             onClick={() => setActiveTab("chat")}
             className={cn(
               "flex-1 min-w-0 rounded-xl px-2 sm:px-4 py-2 text-xs sm:text-sm font-semibold smooth-transition",
@@ -284,6 +302,8 @@ function Content({
             🤖 {t("chat.title")}
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === "services"}
             onClick={() => setActiveTab("services")}
             className={cn(
               "flex-1 min-w-0 rounded-xl px-2 sm:px-4 py-2 text-xs sm:text-sm font-semibold smooth-transition",
@@ -295,6 +315,8 @@ function Content({
             📋 {t("services")}
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === "representatives"}
             onClick={() => setActiveTab("representatives")}
             className={cn(
               "flex-1 min-w-0 rounded-xl px-2 sm:px-4 py-2 text-xs sm:text-sm font-semibold smooth-transition",
@@ -306,6 +328,8 @@ function Content({
             👥 {t("officials")}
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === "news"}
             onClick={() => setActiveTab("news")}
             className={cn(
               "flex-1 min-w-0 rounded-xl px-2 sm:px-4 py-2 text-xs sm:text-sm font-semibold smooth-transition",
@@ -320,10 +344,18 @@ function Content({
 
         {/* Tab Content */}
         <div className="animate-fade-in">
-          {activeTab === "chat" && <ChatInterface />}
-          {activeTab === "services" && <ServiceDirectory />}
-          {activeTab === "representatives" && <RepresentativeFinder />}
-          {activeTab === "news" && <NewsSection />}
+          <ErrorBoundary name="ChatInterface">
+            {activeTab === "chat" && <ChatInterface />}
+          </ErrorBoundary>
+          <ErrorBoundary name="ServiceDirectory">
+            {activeTab === "services" && <ServiceDirectory />}
+          </ErrorBoundary>
+          <ErrorBoundary name="RepresentativeFinder">
+            {activeTab === "representatives" && <RepresentativeFinder />}
+          </ErrorBoundary>
+          <ErrorBoundary name="NewsSection">
+            {activeTab === "news" && <NewsSection />}
+          </ErrorBoundary>
         </div>
       </Authenticated>
     </div>

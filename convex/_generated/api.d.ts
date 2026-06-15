@@ -9,6 +9,7 @@
  */
 
 import type * as admin from "../admin.js";
+import type * as adminLogs from "../adminLogs.js";
 import type * as auth from "../auth.js";
 import type * as chat from "../chat.js";
 import type * as clear from "../clear.js";
@@ -27,6 +28,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   admin: typeof admin;
+  adminLogs: typeof adminLogs;
   auth: typeof auth;
   chat: typeof chat;
   clear: typeof clear;

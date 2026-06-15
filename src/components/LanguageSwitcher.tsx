@@ -39,6 +39,9 @@ export function LanguageSwitcher() {
       <button
         className="flex items-center gap-2 px-2 xs:px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors min-w-0 shadow-sm"
         onClick={() => setIsOpen(!isOpen)}
+        aria-label={`Language: ${currentLanguage.name}`}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
       >
         <span className="text-base xs:text-lg">{currentLanguage.flag}</span>
         <span className="text-xs xs:text-sm font-medium truncate">

@@ -63,6 +63,18 @@ const applicationTables = {
   admins: defineTable({
     userId: v.id("users"),
   }).index("by_userId", ["userId"]),
+
+  adminLogs: defineTable({
+    adminId: v.id("users"),
+    action: v.string(),
+    entityType: v.string(),
+    entityId: v.string(),
+    details: v.optional(v.string()),
+    timestamp: v.number(),
+  })
+    .index("by_timestamp", ["timestamp"])
+    .index("by_admin", ["adminId"])
+    .index("by_entityType", ["entityType"]),
 };
 
 export default defineSchema({
