@@ -1,5 +1,5 @@
 import { query, mutation, action } from "./_generated/server";
-import { v } from "convex/values";
+import { v, ConvexError } from "convex/values";
 import { getAuthUserId, createAccount } from "@convex-dev/auth/server";
 import { api } from "./_generated/api";
 
@@ -30,8 +30,8 @@ export const listUsers = query({
     );
     return users.map((u) => ({
       _id: u._id,
-      email: (u.email as string | undefined) ?? "(no email)",
-      name: (u.name as string | undefined) ?? null,
+      email: String(u.email ?? "(no email)"),
+      name: String(u.name ?? ""),
       isAdmin: adminIds.has(u._id),
     }));
   },
@@ -40,6 +40,13 @@ export const listUsers = query({
 export const grantAdmin = mutation({
   args: { userId: v.id("users") },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new ConvexError("Unauthenticated");
+    const callerAdmin = await ctx.db
+      .query("admins")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .first();
+    if (!callerAdmin) throw new ConvexError("Unauthorized: Admin only");
     const existing = await ctx.db
       .query("admins")
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))
@@ -53,6 +60,13 @@ export const grantAdmin = mutation({
 export const revokeAdmin = mutation({
   args: { userId: v.id("users") },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new ConvexError("Unauthenticated");
+    const callerAdmin = await ctx.db
+      .query("admins")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .first();
+    if (!callerAdmin) throw new ConvexError("Unauthorized: Admin only");
     const existing = await ctx.db
       .query("admins")
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))
@@ -66,6 +80,17 @@ export const revokeAdmin = mutation({
 export const seedUsers = action({
   args: {},
   handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new ConvexError("Unauthenticated");
+    const callerAdmin = await ctx.runQuery(api.admin.isAdmin);
+    if (!callerAdmin) throw new ConvexError("Unauthorized: Admin only");
+
+    // Idempotency: skip if any test users already exist
+    const existingUsers = await ctx.runQuery(api.admin.listUsers);
+    if (existingUsers.length > 0) {
+      return { results: [], skipped: true };
+    }
+
     const testUsers = [
       { email: "admin@salonehub.sl", password: "admin123", name: "Admin" },
       { email: "alice@test.com", password: "test123", name: "Alice" },

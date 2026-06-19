@@ -6,6 +6,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { Skeleton } from "@/components/Skeleton";
 import { FeedbackForm } from "@/components/FeedbackForm";
 import { JourneyMap } from "@/components/JourneyMap";
+import { OfficeLocationMap } from "@/components/OfficeLocationMap";
 import { motion } from "framer-motion";
 import {
   Search,
@@ -40,7 +41,12 @@ function matchesRegion(locations: string[] | undefined, region: string) {
   return joined.includes(region.toLowerCase());
 }
 
-export function ServiceDirectory() {
+interface ServiceDirectoryProps {
+  isAuthenticated?: boolean;
+  onLoginPrompt?: (feature: string) => void;
+}
+
+export function ServiceDirectory({ isAuthenticated = false, onLoginPrompt }: ServiceDirectoryProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAgency, setSelectedAgency] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("");
@@ -181,9 +187,20 @@ export function ServiceDirectory() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 whileHover={{ y: -4, scale: 1.01 }}
-                className="glass-card card-hover p-4 sm:p-6 cursor-pointer"
-                onClick={() => setSelectedServiceId(service._id)}
+                className="glass-card card-hover p-4 sm:p-6 cursor-pointer relative"
+                onClick={() => {
+                  if (isAuthenticated) {
+                    setSelectedServiceId(service._id);
+                  } else {
+                    onLoginPrompt?.("full service details");
+                  }
+                }}
               >
+                {!isAuthenticated && (
+                  <div className="absolute top-2 right-2 w-7 h-7 bg-emerald-500/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-emerald-500/30 z-10">
+                    <span className="text-xs">🔒</span>
+                  </div>
+                )}
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <span className="pill bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-emerald-400 border border-emerald-500/30">
                     Fast Track
@@ -226,7 +243,17 @@ export function ServiceDirectory() {
                   </div>
                 </div>
 
-                <div className="btn-primary w-full justify-center">
+                <div
+                  className="btn-primary w-full justify-center"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (isAuthenticated) {
+                      setSelectedServiceId(service._id);
+                    } else {
+                      onLoginPrompt?.("full service details");
+                    }
+                  }}
+                >
                   View details →
                 </div>
               </motion.div>
@@ -364,6 +391,18 @@ export function ServiceDirectory() {
                   </li>
                 ))}
               </ul>
+              {selectedService.latitude && selectedService.longitude && (
+                <div className="mt-3">
+                  <OfficeLocationMap
+                    locations={[{
+                      label: selectedService.name,
+                      latitude: selectedService.latitude,
+                      longitude: selectedService.longitude,
+                      description: selectedService.agency,
+                    }]}
+                  />
+                </div>
+              )}
             </motion.div>
 
             <motion.div

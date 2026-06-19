@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { motion } from "framer-motion";
@@ -7,7 +6,6 @@ import { MessageSquare, CheckCircle, Clock } from "lucide-react";
 export function AdminFeedback() {
   const feedbackList = useQuery(api.feedback.list);
   const updateStatus = useMutation(api.feedback.updateStatus);
-  const [expanded, setExpanded] = useState<string | null>(null);
 
   if (!feedbackList) {
     return (
@@ -70,7 +68,7 @@ export function AdminFeedback() {
             {item.status === "open" && (
               <button
                 type="button"
-                onClick={() => updateStatus({ id: item._id, status: "resolved" })}
+                onClick={() => void updateStatus({ id: item._id, status: "resolved" })}
                 className="btn-ghost text-xs flex items-center gap-1 flex-shrink-0"
                 title="Mark as resolved"
               >

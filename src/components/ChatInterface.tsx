@@ -34,7 +34,7 @@ export function ChatInterface() {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim() || isLoading) return;
 
@@ -42,22 +42,16 @@ export function ChatInterface() {
     setMessage("");
     setIsLoading(true);
 
-    try {
-      await sendMessage({ message: userMessage, sessionId });
-    } catch (error) {
-      console.error("Error sending message:", error);
-    } finally {
+    void sendMessage({ message: userMessage, sessionId }).finally(() => {
       setIsLoading(false);
-    }
+    });
   };
 
   return (
     <div className="glass-card card-hover flex flex-col flex-1 min-h-0 max-h-full overflow-hidden">
       <div className="p-4 border-b border-white/20 dark:border-white/10 bg-gradient-to-r from-emerald-600/90 to-cyan-600/80 text-white">
-        <h3 className="font-semibold tracking-tight">SaloneHub AI Assistant</h3>
-        <p className="text-sm opacity-90">
-          Ask about requirements, fees, processing time, and where to go.
-        </p>
+        <h3 className="font-semibold tracking-tight">{t("chat.title")}</h3>
+        <p className="text-sm opacity-90">{t("chat.subtitle")}</p>
       </div>
 
       <div
@@ -68,18 +62,18 @@ export function ChatInterface() {
           <div className="text-center text-muted-foreground py-8">
             <div className="text-4xl mb-4">🤖</div>
             <p className="text-lg font-semibold text-foreground mb-2">
-              Welcome to SaloneHub AI!
+              {t("chatGreeting")}
             </p>
-            <p className="text-sm">Try one of these:</p>
+            <p className="text-sm">{t("chatSuggestions")}</p>
             <div className="mt-4 space-y-2 text-left max-w-md mx-auto">
               <div className="glass-surface rounded-xl p-3 text-sm">
-                "How do I apply for a passport?"
+                {t("chatSuggestion1")}
               </div>
               <div className="glass-surface rounded-xl p-3 text-sm">
-                "What are the fees for business registration?"
+                {t("chatSuggestion2")}
               </div>
               <div className="glass-surface rounded-xl p-3 text-sm">
-                "Where can I get a driver's license in Bo?"
+                {t("chatSuggestion3")}
               </div>
             </div>
           </div>
@@ -150,7 +144,7 @@ export function ChatInterface() {
             disabled={!message.trim() || isLoading}
             className="btn-primary whitespace-nowrap"
           >
-            {isLoading ? "..." : "Send"}
+            {isLoading ? "..." : t("chat.send")}
           </button>
         </div>
       </form>

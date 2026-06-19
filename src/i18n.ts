@@ -4,18 +4,18 @@ import LanguageDetector from "i18next-browser-languagedetector";
 
 // Import translation files
 import en from "../locales/en.json";
-import kr from "../locales/kr.json";
-import md from "../locales/md.json";
-import tm from "../locales/tm.json";
+import kri from "../locales/kri.json";
+import men from "../locales/men.json";
+import tem from "../locales/tem.json";
 
 const resources = {
   en: { translation: en },
-  kr: { translation: kr },
-  md: { translation: md },
-  tm: { translation: tm },
+  kri: { translation: kri },
+  men: { translation: men },
+  tem: { translation: tem },
 };
 
-i18n
+void i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({

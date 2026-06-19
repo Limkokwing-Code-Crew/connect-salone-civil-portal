@@ -3,9 +3,9 @@ import { useState, useEffect, useRef } from "react";
 
 const languages = [
   { code: "en", name: "English", flag: "🇬🇧" },
-  { code: "kr", name: "Krio", flag: "🇸🇱" },
-  { code: "md", name: "Mende", flag: "🇸🇱" },
-  { code: "tm", name: "Temne", flag: "🇸🇱" },
+  { code: "kri", name: "Krio", flag: "🇸🇱" },
+  { code: "men", name: "Mende", flag: "🇸🇱" },
+  { code: "tem", name: "Temne", flag: "🇸🇱" },
 ];
 
 export function LanguageSwitcher() {
@@ -68,7 +68,7 @@ export function LanguageSwitcher() {
             <button
               key={language.code}
               onClick={() => {
-                i18n.changeLanguage(language.code);
+                void i18n.changeLanguage(language.code);
                 setIsOpen(false);
               }}
               className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-left text-gray-900 dark:text-gray-100"

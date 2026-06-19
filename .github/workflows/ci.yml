@@ -7,9 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  quality:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -17,5 +16,13 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npx tsc --noEmit
-      - run: npm run build
+      - name: TypeScript check (app)
+        run: npx tsc -p . --noEmit
+      - name: TypeScript check (convex)
+        run: npx tsc -p convex --noEmit
+      - name: Lint
+        run: npx eslint src/ convex/ --ext .ts,.tsx
+      - name: Unit tests
+        run: npx vitest run --reporter verbose
+      - name: Build
+        run: npx vite build

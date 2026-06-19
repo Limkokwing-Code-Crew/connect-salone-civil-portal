@@ -1,17 +1,17 @@
 import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
-import type { Id } from "./_generated/dataModel";
+import { v, ConvexError } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const list = query({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authenticated");
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new ConvexError("Unauthenticated");
     const admin = await ctx.db
       .query("admins")
-      .withIndex("by_userId", (q) => q.eq("userId", identity.subject as Id<"users">))
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
       .first();
-    if (!admin) throw new Error("Not an admin");
+    if (!admin) throw new ConvexError("Unauthorized: Admin only");
     return await ctx.db
       .query("adminLogs")
       .order("desc")
@@ -27,15 +27,15 @@ export const log = mutation({
     details: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authenticated");
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new ConvexError("Unauthenticated");
     const user = await ctx.db
       .query("admins")
-      .withIndex("by_userId", (q) => q.eq("userId", identity.subject as Id<"users">))
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
       .first();
-    if (!user) throw new Error("Not an admin");
+    if (!user) throw new ConvexError("Unauthorized: Admin only");
     await ctx.db.insert("adminLogs", {
-      adminId: identity.subject as Id<"users">,
+      adminId: userId,
       action: args.action,
       entityType: args.entityType,
       entityId: args.entityId,

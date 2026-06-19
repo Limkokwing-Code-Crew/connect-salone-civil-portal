@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Check, ArrowDown } from "lucide-react";
+import { Check } from "lucide-react";
 
 interface Step {
   label: string;

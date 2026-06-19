@@ -4,6 +4,7 @@ import { api } from "../../convex/_generated/api";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Skeleton } from "@/components/Skeleton";
 import { FeedbackForm } from "@/components/FeedbackForm";
+import { OfficeLocationMap } from "@/components/OfficeLocationMap";
 import { motion } from "framer-motion";
 import { Search, Phone, Mail, MapPin, Building } from "lucide-react";
 
@@ -211,6 +212,18 @@ export function RepresentativeFinder() {
                   )}
                 </div>
 
+                {rep.latitude && rep.longitude && (
+                  <div className="mt-3">
+                    <OfficeLocationMap
+                      locations={[{
+                        label: rep.name,
+                        latitude: rep.latitude,
+                        longitude: rep.longitude,
+                        description: rep.officeAddress || rep.office || rep.district,
+                      }]}
+                    />
+                  </div>
+                )}
                 <div className="mt-4 pt-4 border-t border-white/20 dark:border-white/10">
                   <div className="flex gap-2">
                     <button className="btn-ghost flex-1 text-sm">

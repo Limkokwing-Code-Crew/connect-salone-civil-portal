@@ -23,38 +23,27 @@ export default defineConfig(({ mode }) => ({
         ],
       },
     }),
-    // The code below enables dev tools like taking screenshots of your site
-    // while it is being developed on chef.convex.dev.
-    // Feel free to remove this code if you're no longer developing your app with Chef.
-    mode === "development"
-      ? {
-          name: "inject-chef-dev",
-          transform(code: string, id: string) {
-            if (id.includes("main.tsx")) {
-              return {
-                code: `${code}
-
-/* Added by Vite plugin inject-chef-dev */
-window.addEventListener('message', async (message) => {
-  if (message.source !== window.parent) return;
-  if (message.data.type !== 'chefPreviewRequest') return;
-
-  const worker = await import('https://chef.convex.dev/scripts/worker.bundled.mjs');
-  await worker.respondToMessage(message);
-});
-            `,
-                map: null,
-              };
-            }
-            return null;
-          },
-        }
-      : null,
-    // End of code for taking screenshots on chef.convex.dev.
   ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("framer-motion")) return "vendor-framer";
+            if (id.includes("react") || id.includes("scheduler")) return "vendor-react";
+            if (id.includes("leaflet") || id.includes("react-leaflet")) return "vendor-map";
+            if (id.includes("lucide-react")) return "vendor-icons";
+            if (id.includes("convex") || id.includes("@convex-dev")) return "vendor-convex";
+            if (id.includes("i18next") || id.includes("react-i18next")) return "vendor-i18n";
+            return "vendor-other";
+          }
+        },
+      },
     },
   },
 }));

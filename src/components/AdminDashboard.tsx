@@ -1,104 +1,90 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, usePaginatedQuery } from "convex/react";
-import { useAuthActions } from "@convex-dev/auth/react";
+import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 import { motion } from "framer-motion";
 import type { Doc } from "../../convex/_generated/dataModel";
-import { downloadCsv } from "@/lib/csv";
 import { AdminAuditLog } from "@/components/AdminAuditLog";
 import { AdminFeedback } from "@/components/AdminFeedback";
 import { AdminStats } from "@/components/AdminStats";
+import { AdminServiceForm } from "@/components/AdminServiceForm";
+import { AdminServiceList } from "@/components/AdminServiceList";
+import { AdminRepForm } from "@/components/AdminRepForm";
+import { AdminRepList } from "@/components/AdminRepList";
+import { AdminNewsForm } from "@/components/AdminNewsForm";
+import { AdminNewsList } from "@/components/AdminNewsList";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { Skeleton } from "@/components/Skeleton";
 import {
-  Download,
-  LogOut,
-  Edit,
-  Trash2,
-  Save,
-  Settings,
-  Users,
-  FileText,
-  UserCheck,
-  Activity,
-  MessageSquare,
-  BarChart3,
+  Settings, FileText, UserCheck, Activity, MessageSquare, BarChart3, Shield, ArrowLeft, Newspaper,
 } from "lucide-react";
 
-export function AdminDashboard() {
-  const { signOut } = useAuthActions();
-  const [editingService, setEditingService] = useState<Doc<"services"> | null>(
-    null,
-  );
-  const [editingRepresentative, setEditingRepresentative] =
-    useState<Doc<"representatives"> | null>(null);
-  const [activeTab, setActiveTab] = useState<"services" | "representatives" | "audit" | "feedback" | "stats">(
-    "services",
-  );
-  const [formData, setFormData] = useState({
-    name: "",
-    agency: "",
-    fee: "",
-    processingTime: "",
-    documents: "",
-    eligibility: "",
-    processSteps: "",
-    locations: "",
-    contacts: "",
-    notes: "",
-    lastVerified: "",
-    region: "",
+interface AdminDashboardProps {
+  onBack: () => void;
+}
+
+const FORM_KEY = "salonehub_admin_form";
+const REP_FORM_KEY = "salonehub_admin_rep_form";
+
+function loadForm(key: string, fallback: any) {
+  try {
+    const saved = sessionStorage.getItem(key);
+    return saved ? JSON.parse(saved) : fallback;
+  } catch { return fallback; }
+}
+
+function saveForm(key: string, data: any) {
+  try { sessionStorage.setItem(key, JSON.stringify(data)); } catch { /* ignore */ }
+}
+
+export function AdminDashboard({ onBack }: AdminDashboardProps) {
+  const [editingService, setEditingService] = useState<Doc<"services"> | null>(null);
+  const [editingRepresentative, setEditingRepresentative] = useState<Doc<"representatives"> | null>(null);
+  const [activeTab, setActiveTab] = useState<"services" | "representatives" | "audit" | "feedback" | "stats" | "admins" | "news">("stats");
+  const [formData, setFormData] = useState(loadForm(FORM_KEY, {
+    name: "", agency: "", fee: "", processingTime: "", documents: "",
+    eligibility: "", processSteps: "", locations: "", contacts: "", notes: "",
+    lastVerified: "", region: "", latitude: "", longitude: "",
+  }));
+  const [repFormData, setRepFormData] = useState(loadForm(REP_FORM_KEY, {
+    name: "", role: "", district: "", phone: "", email: "",
+  }));
+  const [editingNews, setEditingNews] = useState<Doc<"news"> | null>(null);
+  const [newsFormData, setNewsFormData] = useState({
+    title: "", summary: "", category: "", source: "SaloneHub", href: "", publishedAt: "",
   });
-  const [repFormData, setRepFormData] = useState({
-    name: "",
-    role: "",
-    district: "",
-    constituency: "",
-    phone: "",
-    email: "",
-    title: "",
-    ministry: "",
-    office: "",
-    officeAddress: "",
-  });
+  const newsList = useQuery(api.news.list, {});
+
+  useEffect(() => { saveForm(FORM_KEY, formData); }, [formData]);
+  useEffect(() => { saveForm(REP_FORM_KEY, repFormData); }, [repFormData]);
 
   const isAdmin = useQuery(api.admin.isAdmin);
   const {
     results: services,
     status: servicesStatus,
-    loadMore: loadMoreServices,
-  } = usePaginatedQuery(
-    api.services.getServicesPaginated,
-    {},
-    { initialNumItems: 20 },
-  );
+  } = usePaginatedQuery(api.services.getServicesPaginated, {}, { initialNumItems: 20 });
   const {
     results: representatives,
     status: repsStatus,
-    loadMore: loadMoreReps,
-  } = usePaginatedQuery(
-    api.representatives.getRepresentativesPaginated,
-    {},
-    { initialNumItems: 20 },
-  );
+  } = usePaginatedQuery(api.representatives.getRepresentativesPaginated, {}, { initialNumItems: 20 });
   const saveServiceMutation = useMutation(api.services.createService);
   const updateServiceMutation = useMutation(api.services.updateService);
   const deleteServiceMutation = useMutation(api.services.deleteService);
-  const saveRepresentativeMutation = useMutation(
-    api.representatives.createRepresentative,
-  );
-  const updateRepresentativeMutation = useMutation(
-    api.representatives.updateRepresentative,
-  );
-  const deleteRepresentativeMutation = useMutation(
-    api.representatives.deleteRepresentative,
-  );
+  const saveRepresentativeMutation = useMutation(api.representatives.createRepresentative);
+  const updateRepresentativeMutation = useMutation(api.representatives.updateRepresentative);
+  const deleteRepresentativeMutation = useMutation(api.representatives.deleteRepresentative);
+  const grantAdminMutation = useMutation(api.admin.grantAdmin);
+  const revokeAdminMutation = useMutation(api.admin.revokeAdmin);
   const auditLog = useMutation(api.adminLogs.log);
+  const createNewsMutation = useMutation(api.news.createNews);
+  const updateNewsMutation = useMutation(api.news.updateNews);
+  const deleteNewsMutation = useMutation(api.news.deleteNews);
 
-  const handleLogout = () => {
-    if (window.confirm("Are you sure you want to logout?")) {
-      void signOut().then(() => window.location.reload());
-    }
-  };
+  const users = useQuery(api.admin.listUsers);
 
+  const [confirmDelete, setConfirmDelete] = useState<{
+    type: "service" | "representative"; id: string; name: string;
+  } | null>(null);
   if (isAdmin === undefined) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
@@ -110,113 +96,69 @@ export function AdminDashboard() {
   if (!isAdmin) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center px-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="glass-card card-hover p-8 max-w-md w-full text-center"
-        >
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+          className="glass-card card-hover p-8 max-w-md w-full text-center">
           <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Settings className="text-white" size={24} />
           </div>
           <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
-          <p className="text-muted-foreground">
-            You must be signed in with an admin account to access this panel.
-          </p>
+          <p className="text-muted-foreground">You must be signed in with an admin account to access this panel.</p>
         </motion.div>
       </div>
     );
   }
 
-  const handleEdit = (service: any) => {
+  const handleEdit = (service: Doc<"services">) => {
     setEditingService(service);
     setFormData({
-      name: service.name || "",
-      agency: service.agency || "",
-      fee: service.fee || "",
-      processingTime: service.processingTime || "",
-      documents: service.documents?.join(", ") || "",
-      eligibility: service.eligibility || "",
-      processSteps: service.processSteps?.join(", ") || "",
-      locations: service.locations?.join(", ") || "",
-      contacts: service.contacts || "",
-      notes: service.notes || "",
-      lastVerified: service.lastVerified || "",
-      region: service.region || "",
+      name: service.name || "", agency: service.agency || "", fee: service.fee || "",
+      processingTime: service.processingTime || "", documents: service.documents?.join(", ") || "",
+      eligibility: service.eligibility || "", processSteps: service.processSteps?.join(", ") || "",
+      locations: service.locations?.join(", ") || "", contacts: service.contacts || "",
+      notes: service.notes || "", lastVerified: service.lastVerified || "",
+      region: service.region || "", latitude: service.latitude?.toString() || "",
+      longitude: service.longitude?.toString() || "",
     });
   };
 
   const resetForm = () => {
     setEditingService(null);
-    setFormData({
-      name: "",
-      agency: "",
-      fee: "",
-      processingTime: "",
-      documents: "",
-      eligibility: "",
-      processSteps: "",
-      locations: "",
-      contacts: "",
-      notes: "",
-      lastVerified: "",
-      region: "",
-    });
+    const empty = { name: "", agency: "", fee: "", processingTime: "", documents: "",
+      eligibility: "", processSteps: "", locations: "", contacts: "", notes: "",
+      lastVerified: "", region: "", latitude: "", longitude: "" };
+    setFormData(empty);
+    saveForm(FORM_KEY, empty);
   };
 
-  const handleEditRepresentative = (representative: any) => {
+  const handleEditRepresentative = (representative: Doc<"representatives">) => {
     setEditingRepresentative(representative);
     setRepFormData({
-      name: representative.name || "",
-      role: representative.role || "",
+      name: representative.name || "", role: representative.role || "",
       district: representative.district || "",
-      constituency: representative.constituency || "",
-      phone: representative.phone || "",
-      email: representative.email || "",
-      title: representative.title || "",
-      ministry: representative.ministry || "",
-      office: representative.office || "",
-      officeAddress: representative.officeAddress || "",
+      phone: representative.phone || "", email: representative.email || "",
     });
   };
 
   const resetRepForm = () => {
     setEditingRepresentative(null);
-    setRepFormData({
-      name: "",
-      role: "",
-      district: "",
-      constituency: "",
-      phone: "",
-      email: "",
-      title: "",
-      ministry: "",
-      office: "",
-      officeAddress: "",
-    });
+    const empty = { name: "", role: "", district: "", phone: "", email: "" };
+    setRepFormData(empty);
+    saveForm(REP_FORM_KEY, empty);
   };
 
   const handleRepSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const repData = { ...repFormData };
     if (editingRepresentative) {
-      updateRepresentativeMutation({
-        id: editingRepresentative._id,
-        ...repFormData,
-      });
-      void auditLog({
-        action: "update",
-        entityType: "representatives",
-        entityId: editingRepresentative._id,
-        details: repFormData.name,
-      });
+      void updateRepresentativeMutation({ id: editingRepresentative._id, ...repData }).then(() => {
+        void auditLog({ action: "update", entityType: "representatives", entityId: editingRepresentative._id, details: repFormData.name });
+        toast.success(`Updated ${repFormData.name}`);
+      }).catch(() => toast.error("Failed to update representative"));
     } else {
-      saveRepresentativeMutation(repFormData).then((id) => {
-        void auditLog({
-          action: "create",
-          entityType: "representatives",
-          entityId: id,
-          details: repFormData.name,
-        });
-      });
+      saveRepresentativeMutation(repData).then((id) => {
+        void auditLog({ action: "create", entityType: "representatives", entityId: id, details: repFormData.name });
+        toast.success(`Created ${repFormData.name}`);
+      }).catch(() => toast.error("Failed to create representative"));
     }
     resetRepForm();
   };
@@ -225,125 +167,142 @@ export function AdminDashboard() {
     e.preventDefault();
     const serviceData = {
       ...formData,
-      documents: formData.documents
-        .split(",")
-        .map((d) => d.trim())
-        .filter((d) => d),
-      processSteps: formData.processSteps
-        .split(",")
-        .map((s) => s.trim())
-        .filter((s) => s),
-      locations: formData.locations
-        .split(",")
-        .map((l) => l.trim())
-        .filter((l) => l),
+      documents: formData.documents.split(",").map((d: string) => d.trim()).filter((d: string) => d),
+      processSteps: formData.processSteps.split(",").map((s: string) => s.trim()).filter((s: string) => s),
+      locations: formData.locations.split(",").map((l: string) => l.trim()).filter((l: string) => l),
+      latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
+      longitude: formData.longitude ? parseFloat(formData.longitude) : undefined,
     };
     if (editingService) {
-      updateServiceMutation({ id: editingService._id, ...serviceData });
-      void auditLog({
-        action: "update",
-        entityType: "services",
-        entityId: editingService._id,
-        details: serviceData.name,
-      });
+      void updateServiceMutation({ id: editingService._id, ...serviceData }).then(() => {
+        void auditLog({ action: "update", entityType: "services", entityId: editingService._id, details: serviceData.name });
+        toast.success(`Updated ${serviceData.name}`);
+      }).catch(() => toast.error("Failed to update service"));
     } else {
       saveServiceMutation(serviceData).then((id) => {
-        void auditLog({
-          action: "create",
-          entityType: "services",
-          entityId: id,
-          details: serviceData.name,
-        });
-      });
+        void auditLog({ action: "create", entityType: "services", entityId: id, details: serviceData.name });
+        toast.success(`Created ${serviceData.name}`);
+      }).catch(() => toast.error("Failed to create service"));
     }
     resetForm();
   };
+
+  const handleConfirmDelete = () => {
+    if (!confirmDelete) return;
+    if (confirmDelete.type === "service") {
+      void deleteServiceMutation({ id: confirmDelete.id }).then(() => {
+        void auditLog({ action: "delete", entityType: "services", entityId: confirmDelete.id, details: confirmDelete.name });
+        toast.success(`Deleted ${confirmDelete.name}`);
+      }).catch(() => toast.error("Failed to delete service"));
+    } else {
+      void deleteRepresentativeMutation({ id: confirmDelete.id }).then(() => {
+        void auditLog({ action: "delete", entityType: "representatives", entityId: confirmDelete.id, details: confirmDelete.name });
+        toast.success(`Deleted ${confirmDelete.name}`);
+      }).catch(() => toast.error("Failed to delete representative"));
+    }
+    setConfirmDelete(null);
+  };
+
+  const handleNewsEdit = (item: Doc<"news">) => {
+    setEditingNews(item);
+    setNewsFormData({
+      title: item.title,
+      summary: item.summary,
+      category: item.category,
+      source: item.source ?? "",
+      href: item.href ?? "",
+      publishedAt: new Date(item.publishedAt).toISOString().split("T")[0],
+    });
+  };
+
+  const resetNewsForm = () => {
+    setEditingNews(null);
+    setNewsFormData({ title: "", summary: "", category: "", source: "SaloneHub", href: "", publishedAt: "" });
+  };
+
+  const handleNewsSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const data = {
+      title: newsFormData.title,
+      summary: newsFormData.summary,
+      category: newsFormData.category,
+      source: newsFormData.source || undefined,
+      href: newsFormData.href || undefined,
+      publishedAt: newsFormData.publishedAt ? new Date(newsFormData.publishedAt).getTime() : undefined,
+    };
+    if (editingNews) {
+      void updateNewsMutation({ id: editingNews._id, ...data }).then(() => {
+        toast.success("News updated");
+      }).catch(() => toast.error("Failed to update news"));
+    } else {
+      void createNewsMutation(data).then(() => {
+        toast.success("News published");
+      }).catch(() => toast.error("Failed to create news"));
+    }
+    resetNewsForm();
+  };
+
+  const handleNewsDelete = (item: Doc<"news">) => {
+    void deleteNewsMutation({ id: item._id }).then(() => {
+      toast.success("News deleted");
+    }).catch(() => toast.error("Failed to delete news"));
+  };
+
+  const handleGrantAdmin = (userId: string, email: string) => {
+    void grantAdminMutation({ userId: userId as any }).then((result) => {
+      if (result.alreadyAdmin) {
+        toast.info(`${email} is already an admin`);
+      } else {
+        toast.success(`Granted admin to ${email}`);
+      }
+    }).catch(() => toast.error("Failed to grant admin"));
+  };
+
+  const handleRevokeAdmin = (userId: string, email: string) => {
+    void revokeAdminMutation({ userId: userId as any }).then((result) => {
+      if (result.wasNotAdmin) {
+        toast.info(`${email} is not an admin`);
+      } else {
+        toast.success(`Revoked admin from ${email}`);
+      }
+    }).catch(() => toast.error("Failed to revoke admin"));
+  };
+
+  const tabButton = (tab: typeof activeTab, icon: React.ReactNode, label: string) => (
+    <button onClick={() => setActiveTab(tab)}
+      className={`pb-3 px-1 font-medium text-sm transition-colors whitespace-nowrap ${
+        activeTab === tab ? "text-emerald-400 border-b-2 border-emerald-400" : "text-gray-400 hover:text-gray-300"
+      }`}>
+      {icon}{label}
+    </button>
+  );
 
   return (
     <div className="w-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
         <div>
-          <p className="text-emerald-400 font-bold text-xs sm:text-sm uppercase tracking-wider mb-1">
-            Admin
-          </p>
+          <p className="text-emerald-400 font-bold text-xs sm:text-sm uppercase tracking-wider mb-1">Admin</p>
           <h1 className="text-2xl sm:text-4xl font-bold">Control Center</h1>
         </div>
-        <button
-          onClick={handleLogout}
-          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg glass-hover text-red-400 w-full sm:w-auto"
-        >
-          <LogOut size={18} />
-          Logout
+        <button onClick={onBack} className="btn-ghost flex items-center gap-1.5 text-sm">
+          <ArrowLeft size={16} /> Back to main
         </button>
       </div>
 
       <div className="flex gap-4 mb-6 sm:mb-8 border-b border-gray-700 overflow-x-auto no-scrollbar">
-        <button
-          onClick={() => setActiveTab("stats")}
-          className={`pb-3 px-1 font-medium text-sm transition-colors whitespace-nowrap ${
-            activeTab === "stats"
-              ? "text-emerald-400 border-b-2 border-emerald-400"
-              : "text-gray-400 hover:text-gray-300"
-          }`}
-        >
-          <BarChart3 size={16} className="inline mr-1.5" />
-          Stats
-        </button>
-        <button
-          onClick={() => setActiveTab("services")}
-          className={`pb-3 px-1 font-medium text-sm transition-colors whitespace-nowrap ${
-            activeTab === "services"
-              ? "text-emerald-400 border-b-2 border-emerald-400"
-              : "text-gray-400 hover:text-gray-300"
-          }`}
-        >
-          <FileText size={16} className="inline mr-1.5" />
-          Services
-        </button>
-        <button
-          onClick={() => setActiveTab("representatives")}
-          className={`pb-3 px-1 font-medium text-sm transition-colors whitespace-nowrap ${
-            activeTab === "representatives"
-              ? "text-emerald-400 border-b-2 border-emerald-400"
-              : "text-gray-400 hover:text-gray-300"
-          }`}
-        >
-          <UserCheck size={16} className="inline mr-1.5" />
-          Representatives
-        </button>
-        <button
-          onClick={() => setActiveTab("audit")}
-          className={`pb-3 px-1 font-medium text-sm transition-colors whitespace-nowrap ${
-            activeTab === "audit"
-              ? "text-emerald-400 border-b-2 border-emerald-400"
-              : "text-gray-400 hover:text-gray-300"
-          }`}
-        >
-          <Activity size={16} className="inline mr-1.5" />
-          Audit Log
-        </button>
-        <button
-          onClick={() => setActiveTab("feedback")}
-          className={`pb-3 px-1 font-medium text-sm transition-colors whitespace-nowrap ${
-            activeTab === "feedback"
-              ? "text-emerald-400 border-b-2 border-emerald-400"
-              : "text-gray-400 hover:text-gray-300"
-          }`}
-        >
-          <MessageSquare size={16} className="inline mr-1.5" />
-          Feedback
-        </button>
+        {tabButton("stats", <BarChart3 size={16} className="inline mr-1.5" />, "Stats")}
+        {tabButton("services", <FileText size={16} className="inline mr-1.5" />, "Services")}
+        {tabButton("representatives", <UserCheck size={16} className="inline mr-1.5" />, "Representatives")}
+        {tabButton("audit", <Activity size={16} className="inline mr-1.5" />, "Audit Log")}
+        {tabButton("feedback", <MessageSquare size={16} className="inline mr-1.5" />, "Feedback")}
+        {tabButton("admins", <Shield size={16} className="inline mr-1.5" />, "Admins")}
+        {tabButton("news", <Newspaper size={16} className="inline mr-1.5" />, "News")}
       </div>
 
       {activeTab === "stats" && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass-card card-hover p-6"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card card-hover p-6">
           <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <BarChart3 size={20} className="text-emerald-400" />
-            Dashboard Stats
+            <BarChart3 size={20} className="text-emerald-400" />Dashboard Stats
           </h2>
           <AdminStats />
         </motion.div>
@@ -351,467 +310,113 @@ export function AdminDashboard() {
 
       {activeTab === "services" && (
         <div className="grid md:grid-cols-2 gap-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="glass-card card-hover p-6"
-          >
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <FileText size={20} className="text-emerald-400" />
-              {editingService ? "Edit Service" : "Create Service"}
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <input
-                type="text"
-                placeholder="Service Name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                className="input"
-                required
-              />
-              <input
-                type="text"
-                placeholder="Agency"
-                value={formData.agency}
-                onChange={(e) =>
-                  setFormData({ ...formData, agency: e.target.value })
-                }
-                className="input"
-                required
-              />
-              <div className="grid grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  placeholder="Fee (NLe)"
-                  value={formData.fee}
-                  onChange={(e) =>
-                    setFormData({ ...formData, fee: e.target.value })
-                  }
-                  className="input"
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="Processing Time"
-                  value={formData.processingTime}
-                  onChange={(e) =>
-                    setFormData({ ...formData, processingTime: e.target.value })
-                  }
-                  className="input"
-                  required
-                />
-              </div>
-              <textarea
-                placeholder="Eligibility"
-                value={formData.eligibility}
-                onChange={(e) =>
-                  setFormData({ ...formData, eligibility: e.target.value })
-                }
-                className="input"
-                rows={2}
-              />
-              <textarea
-                placeholder="Documents (comma separated)"
-                value={formData.documents}
-                onChange={(e) =>
-                  setFormData({ ...formData, documents: e.target.value })
-                }
-                className="input"
-                rows={3}
-              />
-              <textarea
-                placeholder="Process Steps (comma separated)"
-                value={formData.processSteps}
-                onChange={(e) =>
-                  setFormData({ ...formData, processSteps: e.target.value })
-                }
-                className="input"
-                rows={3}
-              />
-              <textarea
-                placeholder="Locations (comma separated)"
-                value={formData.locations}
-                onChange={(e) =>
-                  setFormData({ ...formData, locations: e.target.value })
-                }
-                className="input"
-                rows={2}
-              />
-              <input
-                type="text"
-                placeholder="Contacts"
-                value={formData.contacts}
-                onChange={(e) =>
-                  setFormData({ ...formData, contacts: e.target.value })
-                }
-                className="input"
-              />
-              <textarea
-                placeholder="Notes / corruption warnings"
-                value={formData.notes}
-                onChange={(e) =>
-                  setFormData({ ...formData, notes: e.target.value })
-                }
-                className="input"
-                rows={2}
-              />
-              <div className="grid grid-cols-2 gap-4">
-                <input
-                  type="date"
-                  placeholder="Last Verified"
-                  value={formData.lastVerified}
-                  onChange={(e) =>
-                    setFormData({ ...formData, lastVerified: e.target.value })
-                  }
-                  className="input"
-                />
-                <input
-                  type="text"
-                  placeholder="Region"
-                  value={formData.region}
-                  onChange={(e) =>
-                    setFormData({ ...formData, region: e.target.value })
-                  }
-                  className="input"
-                />
-              </div>
-              <div className="flex gap-3">
-                <button
-                  type="submit"
-                  className="btn-primary flex-1 flex items-center justify-center gap-2"
-                >
-                  <Save size={18} />
-                  {editingService ? "Update" : "Create"} Service
-                </button>
-                {editingService && (
-                  <button
-                    type="button"
-                    onClick={resetForm}
-                    className="btn-ghost"
-                  >
-                    Cancel
-                  </button>
-                )}
-              </div>
-            </form>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="glass-card card-hover p-6"
-          >
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <Users size={20} className="text-blue-400" />
-              Services ({services?.length || 0})
-              {services && services.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    downloadCsv(
-                      "services.csv",
-                      ["name", "agency", "fee", "processingTime", "region", "contacts"],
-                      services.map((s) => ({
-                        name: s.name,
-                        agency: s.agency,
-                        fee: s.fee,
-                        processingTime: s.processingTime,
-                        region: s.region,
-                        contacts: s.contacts,
-                      })),
-                    )
-                  }
-                  className="ml-auto p-1.5 rounded-lg glass-hover text-muted-foreground hover:text-emerald-400"
-                  title="Export CSV"
-                  aria-label="Export services as CSV"
-                >
-                  <Download size={16} />
-                </button>
-              )}
-            </h2>
-            <div className="space-y-3 max-h-[600px] overflow-y-auto">
-              {services?.map((service) => (
-                <motion.div
-                  key={service._id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="glass-surface rounded-xl p-4 flex items-center justify-between"
-                >
-                  <div className="flex-1">
-                    <h3 className="font-bold">{service.name}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {service.agency} · {service.region}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleEdit(service)}
-                      className="p-2 rounded-lg glass-hover text-emerald-400"
-                    >
-                      <Edit size={18} />
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (window.confirm("Delete this service?")) {
-                          deleteServiceMutation({ id: service._id });
-                          void auditLog({ action: "delete", entityType: "services", entityId: service._id, details: service.name });
-                        }
-                      }}
-                      className="p-2 rounded-lg glass-hover text-red-400"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                </motion.div>
+          <AdminServiceForm
+            formData={formData} setFormData={setFormData}
+            editingService={editingService} resetForm={resetForm}
+            handleSubmit={handleSubmit}
+          />
+          {servicesStatus === "LoadingFirstPage" ? (
+            <div className="space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full rounded-xl" />
               ))}
             </div>
-          </motion.div>
+          ) : (
+            <AdminServiceList services={services} onEdit={handleEdit} onDelete={(s) => setConfirmDelete({ type: "service", id: s._id, name: s.name })} />
+          )}
         </div>
       )}
 
       {activeTab === "representatives" && (
         <div className="grid md:grid-cols-2 gap-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="glass-card card-hover p-6"
-          >
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <UserCheck size={20} className="text-purple-400" />
-              {editingRepresentative
-                ? "Edit Representative"
-                : "Create Representative"}
-            </h2>
-            <form onSubmit={handleRepSubmit} className="space-y-4">
-              <input
-                type="text"
-                placeholder="Full Name"
-                value={repFormData.name}
-                onChange={(e) =>
-                  setRepFormData({ ...repFormData, name: e.target.value })
-                }
-                className="input"
-                required
-              />
-              <input
-                type="text"
-                placeholder="Title/Position"
-                value={repFormData.title}
-                onChange={(e) =>
-                  setRepFormData({ ...repFormData, title: e.target.value })
-                }
-                className="input"
-              />
-              <input
-                type="text"
-                placeholder="Role"
-                value={repFormData.role}
-                onChange={(e) =>
-                  setRepFormData({ ...repFormData, role: e.target.value })
-                }
-                className="input"
-              />
-              <input
-                type="text"
-                placeholder="Ministry"
-                value={repFormData.ministry}
-                onChange={(e) =>
-                  setRepFormData({ ...repFormData, ministry: e.target.value })
-                }
-                className="input"
-              />
-              <input
-                type="text"
-                placeholder="District"
-                value={repFormData.district}
-                onChange={(e) =>
-                  setRepFormData({ ...repFormData, district: e.target.value })
-                }
-                className="input"
-                required
-              />
-              <input
-                type="text"
-                placeholder="Constituency"
-                value={repFormData.constituency}
-                onChange={(e) =>
-                  setRepFormData({
-                    ...repFormData,
-                    constituency: e.target.value,
-                  })
-                }
-                className="input"
-              />
-              <input
-                type="text"
-                placeholder="Office"
-                value={repFormData.office}
-                onChange={(e) =>
-                  setRepFormData({ ...repFormData, office: e.target.value })
-                }
-                className="input"
-              />
-              <input
-                type="text"
-                placeholder="Office Address"
-                value={repFormData.officeAddress}
-                onChange={(e) =>
-                  setRepFormData({
-                    ...repFormData,
-                    officeAddress: e.target.value,
-                  })
-                }
-                className="input"
-              />
-              <input
-                type="tel"
-                placeholder="Phone Number"
-                value={repFormData.phone}
-                onChange={(e) =>
-                  setRepFormData({ ...repFormData, phone: e.target.value })
-                }
-                className="input"
-                required
-              />
-              <input
-                type="email"
-                placeholder="Email Address"
-                value={repFormData.email}
-                onChange={(e) =>
-                  setRepFormData({ ...repFormData, email: e.target.value })
-                }
-                className="input"
-                required
-              />
-              <div className="flex gap-3">
-                <button
-                  type="submit"
-                  className="btn-primary flex-1 flex items-center justify-center gap-2"
-                >
-                  <Save size={18} />
-                  {editingRepresentative ? "Update" : "Create"} Representative
-                </button>
-                {editingRepresentative && (
-                  <button
-                    type="button"
-                    onClick={resetRepForm}
-                    className="btn-ghost"
-                  >
-                    Cancel
-                  </button>
-                )}
-              </div>
-            </form>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="glass-card card-hover p-6"
-          >
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <UserCheck size={20} className="text-purple-400" />
-              Representatives ({representatives?.length || 0})
-              {representatives && representatives.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    downloadCsv(
-                      "representatives.csv",
-                      ["name", "role", "district", "constituency", "phone", "email"],
-                      representatives.map((r) => ({
-                        name: r.name,
-                        role: r.role,
-                        district: r.district,
-                        constituency: r.constituency,
-                        phone: r.phone,
-                        email: r.email,
-                      })),
-                    )
-                  }
-                  className="ml-auto p-1.5 rounded-lg glass-hover text-muted-foreground hover:text-emerald-400"
-                  title="Export CSV"
-                  aria-label="Export representatives as CSV"
-                >
-                  <Download size={16} />
-                </button>
-              )}
-            </h2>
-            <div className="space-y-3 max-h-[600px] overflow-y-auto">
-              {representatives?.map((representative) => (
-                <motion.div
-                  key={representative._id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="glass-surface rounded-xl p-4 flex items-center justify-between"
-                >
-                  <div className="flex-1">
-                    <h3 className="font-bold">{representative.name}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {representative.title || representative.role} ·{" "}
-                      {representative.district}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {representative.phone} · {representative.email}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleEditRepresentative(representative)}
-                      className="p-2 rounded-lg glass-hover text-emerald-400"
-                    >
-                      <Edit size={18} />
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (window.confirm("Delete this representative?")) {
-                          deleteRepresentativeMutation({
-                            id: representative._id,
-                          });
-                          void auditLog({ action: "delete", entityType: "representatives", entityId: representative._id, details: representative.name });
-                        }
-                      }}
-                      className="p-2 rounded-lg glass-hover text-red-400"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                </motion.div>
+          <AdminRepForm
+            repFormData={repFormData} setRepFormData={setRepFormData}
+            editingRepresentative={editingRepresentative} resetRepForm={resetRepForm}
+            handleRepSubmit={handleRepSubmit}
+          />
+          {repsStatus === "LoadingFirstPage" ? (
+            <div className="space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full rounded-xl" />
               ))}
             </div>
-          </motion.div>
+          ) : (
+            <AdminRepList representatives={representatives} onEdit={handleEditRepresentative} onDelete={(r) => setConfirmDelete({ type: "representative", id: r._id, name: r.name })} />
+          )}
         </div>
       )}
 
       {activeTab === "audit" && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass-card card-hover p-6"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card card-hover p-6">
           <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <Activity size={20} className="text-purple-400" />
-            Audit Log
+            <Activity size={20} className="text-purple-400" />Audit Log
           </h2>
           <AdminAuditLog />
         </motion.div>
       )}
 
       {activeTab === "feedback" && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass-card card-hover p-6"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card card-hover p-6">
           <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <MessageSquare size={20} className="text-purple-400" />
-            Feedback
+            <MessageSquare size={20} className="text-purple-400" />Feedback
           </h2>
           <AdminFeedback />
         </motion.div>
       )}
+
+      {activeTab === "admins" && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card card-hover p-6">
+          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <Shield size={20} className="text-yellow-400" />Admin Management
+          </h2>
+          {!users ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+            </div>
+          ) : users.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8">No users found.</p>
+          ) : (
+            <div className="space-y-2 max-h-[500px] overflow-y-auto">
+              {users.map((u) => (
+                <div key={u._id} className="glass-surface rounded-xl p-3 flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">{u.email}</p>
+                    {u.name && <p className="text-xs text-muted-foreground">{u.name}</p>}
+                  </div>
+                  {u.isAdmin ? (
+                    <button onClick={() => handleRevokeAdmin(u._id, u.email)}
+                      className="px-3 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg text-xs font-medium hover:bg-red-500/30">
+                      Revoke Admin
+                    </button>
+                  ) : (
+                    <button onClick={() => handleGrantAdmin(u._id, u.email)}
+                      className="px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg text-xs font-medium hover:bg-emerald-500/30">
+                      Grant Admin
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </motion.div>
+      )}
+
+      {activeTab === "news" && (
+        <div className="grid md:grid-cols-2 gap-8">
+          <AdminNewsForm
+            formData={newsFormData} setFormData={setNewsFormData}
+            editingNews={editingNews} resetForm={resetNewsForm}
+            handleSubmit={handleNewsSubmit}
+          />
+          <AdminNewsList news={newsList} onEdit={handleNewsEdit} onDelete={handleNewsDelete} />
+        </div>
+      )}
+
+      <ConfirmDialog open={!!confirmDelete} onOpenChange={() => setConfirmDelete(null)}
+        title="Confirm Deletion"
+        message={confirmDelete ? `Are you sure you want to delete "${confirmDelete.name}"? This action cannot be undone.` : ""}
+        confirmLabel="Delete" variant="danger" onConfirm={handleConfirmDelete} />
+
     </div>
   );
 }

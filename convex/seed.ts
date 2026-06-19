@@ -1,7 +1,17 @@
 import { mutation } from "./_generated/server";
+import { ConvexError } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const seed = mutation({
   handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new ConvexError("Unauthenticated");
+    const admin = await ctx.db
+      .query("admins")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .first();
+    if (!admin) throw new ConvexError("Unauthorized: Admin only");
+
     // Check if data already exists
     const existingServices = await ctx.db.query("services").first();
     if (existingServices) {

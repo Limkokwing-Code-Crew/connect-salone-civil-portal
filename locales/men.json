@@ -1,0 +1,24 @@
+{
+  "welcome": "Bαi",
+  "chat": {
+    "title": "SaloneHub AI Asista",
+    "subtitle": "Aks bɔt rikwaiamɛnt, fi, prɔsesin taym, ɛn usay fɔ go.",
+    "placeholder": "Tα wɛnde govεmεnt sεrvise...",
+    "send": "Send"
+  },
+  "services": "Sεrvise",
+  "officials": "Ofisial",
+  "news": "Niyuz",
+  "hero": {
+    "title": "SaloneHub",
+    "subtitle": "Salɔn sivik portal — frili luk sɛvis ɛn ofisal. Saayin fɔ yuz AI asista.",
+    "signIn": "Saayin fɔ yuz AI Asista"
+  },
+  "welcomeBack": "Bαi bak, {name}!",
+  "welcomePrompt": "Wetin yu want du tide — aks AI, luk sɛvis, ɔ faynd ofisal?",
+  "chatGreeting": "Bαi to SaloneHub AI!",
+  "chatSuggestions": "Tray wan dɛn ya:",
+  "chatSuggestion1": "\"Aw a go aply fɔ paspɔt?\"",
+  "chatSuggestion2": "\"Wetin na di fi fɔ biznɛs rɛjistreshɔn?\"",
+  "chatSuggestion3": "\"Usay a kin gɛt draiva layns na Bo?\""
+}

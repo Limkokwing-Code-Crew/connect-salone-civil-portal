@@ -23,6 +23,8 @@ const applicationTables = {
     officialFees: v.optional(v.string()),
     contactInfo: v.optional(v.string()),
     websiteUrl: v.optional(v.string()),
+    latitude: v.optional(v.float64()),
+    longitude: v.optional(v.float64()),
   })
     .index("by_agency", ["agency"])
     .index("by_region", ["region"])
@@ -42,6 +44,8 @@ const applicationTables = {
     ministry: v.optional(v.string()),
     office: v.optional(v.string()),
     officeAddress: v.optional(v.string()),
+    latitude: v.optional(v.float64()),
+    longitude: v.optional(v.float64()),
   })
     .index("by_district", ["district"])
     .index("by_role", ["role"])
@@ -90,6 +94,23 @@ const applicationTables = {
     .index("by_timestamp", ["timestamp"])
     .index("by_admin", ["adminId"])
     .index("by_entityType", ["entityType"]),
+
+  news: defineTable({
+    title: v.string(),
+    summary: v.string(),
+    category: v.string(),
+    type: v.string(),
+    source: v.optional(v.string()),
+    href: v.optional(v.string()),
+    relatedEntityType: v.optional(v.string()),
+    relatedEntityId: v.optional(v.string()),
+    publishedAt: v.number(),
+    createdAt: v.number(),
+    createdBy: v.optional(v.id("users")),
+  })
+    .index("by_publishedAt", ["publishedAt"])
+    .index("by_category", ["category"])
+    .index("by_type", ["type"]),
 };
 
 export default defineSchema({

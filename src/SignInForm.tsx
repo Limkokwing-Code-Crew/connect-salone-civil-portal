@@ -2,7 +2,11 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-export function SignInForm() {
+interface SignInFormProps {
+  onSuccess?: () => void;
+}
+
+export function SignInForm({ onSuccess }: SignInFormProps) {
   const { signIn } = useAuthActions();
   const [flow, setFlow] = useState<"signIn" | "signUp">("signIn");
   const [submitting, setSubmitting] = useState(false);
@@ -11,12 +15,17 @@ export function SignInForm() {
     <div className="w-full space-y-4">
       <form
         className="flex flex-col gap-3"
+        autoComplete="off"
         onSubmit={(e) => {
           e.preventDefault();
           setSubmitting(true);
           const formData = new FormData(e.target as HTMLFormElement);
           formData.set("flow", flow);
-          void signIn("password", formData).catch((error) => {
+          void signIn("password", formData).then(() => {
+            setSubmitting(false);
+            onSuccess?.();
+          }).catch((error) => {
+            setSubmitting(false);
             let toastTitle = "";
             if (error.message.includes("Invalid password")) {
               toastTitle = "Invalid password. Please try again.";
@@ -27,7 +36,6 @@ export function SignInForm() {
                   : "Could not sign up, did you mean to sign in?";
             }
             toast.error(toastTitle);
-            setSubmitting(false);
           });
         }}
       >
@@ -36,15 +44,19 @@ export function SignInForm() {
           type="email"
           name="email"
           placeholder="Email"
-          autoComplete="email"
+          autoComplete="off"
           required
         />
+        <input aria-hidden="true" tabIndex={-1} autoComplete="off"
+          type="text" name="fake_username" style={{ position: "absolute", opacity: 0, height: 0 }} />
+        <input aria-hidden="true" tabIndex={-1} autoComplete="off"
+          type="password" name="fake_password" style={{ position: "absolute", opacity: 0, height: 0 }} />
         <input
           className="auth-input-field"
           type="password"
           name="password"
           placeholder={flow === "signIn" ? "Password" : "Password (min 8 chars)"}
-          autoComplete={flow === "signIn" ? "current-password" : "new-password"}
+          autoComplete="off"
           minLength={8}
           required
         />
@@ -66,14 +78,6 @@ export function SignInForm() {
           </button>
         </div>
       </form>
-      <div className="flex items-center justify-center">
-        <hr className="flex-1 border-gray-300 dark:border-gray-600" />
-        <span className="px-4 text-sm text-muted-foreground">or</span>
-        <hr className="flex-1 border-gray-300 dark:border-gray-600" />
-      </div>
-      <button className="auth-button" onClick={() => void signIn("anonymous")}>
-        Sign in anonymously
-      </button>
     </div>
   );
 }

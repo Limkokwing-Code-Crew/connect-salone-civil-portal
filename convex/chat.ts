@@ -1,5 +1,5 @@
 import { action, mutation, query } from "./_generated/server";
-import { v } from "convex/values";
+import { v, ConvexError } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { api } from "./_generated/api";
 
@@ -88,13 +88,25 @@ export const sendMessage = action({
     sessionId: v.string(),
   },
   handler: async (ctx, args) => {
-    // Rate limiting: max 20 messages per minute per session
+    // Authentication check
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new ConvexError("Please sign in to use AI chat");
+
+    // Rate limiting: max 15 messages per minute per session
     const recentMessages = await ctx.runQuery(api.chat.getRecentMessages, {
       sessionId: args.sessionId,
       since: Date.now() - 60000,
     });
-    if (recentMessages.length >= 20) {
-      throw new Error("You've reached the message limit. Please wait a moment before sending more messages.");
+    if (recentMessages.length >= 15) {
+      throw new ConvexError("Rate limit exceeded. Please wait before sending more messages (max 15/minute).");
+    }
+
+    // Global rate limit: count all messages in last 60s across all sessions
+    const globalRecent = await ctx.runQuery(api.chat.getGlobalMessageCount, {
+      since: Date.now() - 60000,
+    });
+    if (globalRecent >= 200) {
+      throw new ConvexError("Service is busy. Please try again in a moment.");
     }
 
     // Get AI response using Groq (free alternative to OpenAI)
@@ -153,8 +165,6 @@ Available services include passport applications, business registration, driver'
         completion.choices[0]?.message?.content ||
         "I apologize, but I'm having trouble processing your request right now. Please try again or contact the relevant ministry directly.";
 
-      console.log("DEBUG: OpenAI responded successfully");
-
       // Save the conversation
       await ctx.runMutation(api.chat.saveMessage, {
         message: args.message,
@@ -193,8 +203,8 @@ Available services include passport applications, business registration, driver'
           response: fallbackResponse,
           sessionId: args.sessionId,
         });
-      } catch (saveError) {
-        console.error("DEBUG: Failed to save fallback message:", saveError);
+      } catch {
+        // Fallback saved best-effort
       }
 
       return fallbackResponse;
@@ -242,5 +252,13 @@ export const getRecentMessages = query({
       .order("desc")
       .collect();
     return messages.filter((m) => m.timestamp >= args.since);
+  },
+});
+
+export const getGlobalMessageCount = query({
+  args: { since: v.number() },
+  handler: async (ctx, args) => {
+    const all = await ctx.db.query("chatMessages").order("desc").collect();
+    return all.filter((m) => m.timestamp >= args.since).length;
   },
 });

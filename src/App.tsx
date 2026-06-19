@@ -1,8 +1,9 @@
-import { Authenticated, Unauthenticated, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { api } from "../convex/_generated/api";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { LoginPromptModal } from "@/components/LoginPromptModal";
 import { SignInForm } from "./SignInForm";
 import { SignOutButton } from "./SignOutButton";
 import { Toaster } from "sonner";
@@ -11,7 +12,6 @@ import { LiquidBackground } from "@/components/LiquidBackground";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Modal } from "@/components/Modal";
 import { Footer } from "@/components/Footer";
-import { motion } from "framer-motion";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
 import { MobileMenu } from "./components/MobileMenu";
 import { useTheme } from "@/hooks/useTheme";
@@ -163,38 +163,23 @@ export default function App() {
       <Modal
         open={tourOpen}
         onOpenChange={onTourOpenChange}
-        title="Welcome to SaloneHub"
+        title={t("tour.title")}
       >
         <div className="space-y-4">
           <div className="glass-surface rounded-2xl p-4">
-            <div className="font-semibold">What you can do here</div>
+            <div className="font-semibold">{t("tour.whatYouCanDo")}</div>
             <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
-              <li>
-                <span className="mr-2">🤖</span>Ask the AI assistant about
-                requirements, fees, and where to go.
-              </li>
-              <li>
-                <span className="mr-2">📋</span>Browse government services with
-                filters.
-              </li>
-              <li>
-                <span className="mr-2">👥</span>Find officials and contact
-                details by district.
-              </li>
+              <li><span className="mr-2">🤖</span>{t("tour.aiAssistant")}</li>
+              <li><span className="mr-2">📋</span>{t("tour.browseServices")}</li>
+              <li><span className="mr-2">👥</span>{t("tour.findOfficials")}</li>
             </ul>
           </div>
 
           <div className="glass-surface rounded-2xl p-4">
-            <div className="font-semibold">Pro tips</div>
+            <div className="font-semibold">{t("tour.proTips")}</div>
             <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
-              <li>
-                <span className="mr-2">🌓</span>Use the theme button to cycle
-                Light → Dark → Auto.
-              </li>
-              <li>
-                <span className="mr-2">✨</span>Click a tab — cards have hover
-                lift, blur, and subtle motion.
-              </li>
+              <li><span className="mr-2">🌓</span>{t("tour.themeToggle")}</li>
+              <li><span className="mr-2">✨</span>{t("tour.hoverEffects")}</li>
             </ul>
           </div>
 
@@ -203,13 +188,13 @@ export default function App() {
               className="btn-primary w-full"
               onClick={() => onTourOpenChange(false)}
             >
-              Let’s go
+              {t("tour.letsGo")}
             </button>
             <button
               className="btn-ghost w-full"
               onClick={() => onTourOpenChange(false)}
             >
-              Maybe later
+              {t("tour.maybeLater")}
             </button>
           </div>
         </div>
@@ -233,7 +218,57 @@ function Content({
   t: any;
 }) {
   const loggedInUser = useQuery(api.auth.loggedInUser);
+  const adminCheck = useQuery(api.admin.isAdmin);
   const isAuthenticated = loggedInUser !== undefined && loggedInUser !== null;
+
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [loginPromptFeature, setLoginPromptFeature] = useState("");
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [intendedTab, setIntendedTab] = useState<"chat" | "representatives" | "news" | "services" | null>(null);
+
+  // Redirect to intended tab after successful login
+  useEffect(() => {
+    if (isAuthenticated && intendedTab) {
+      setActiveTab(intendedTab);
+      setIntendedTab(null);
+    }
+  }, [isAuthenticated, intendedTab, setActiveTab]);
+
+  // Redirect locked initial tabs to services for guests
+  useEffect(() => {
+    if (!isAuthenticated && loggedInUser !== undefined && (activeTab === "chat" || activeTab === "representatives" || activeTab === "news")) {
+      setActiveTab("services");
+    }
+  }, [isAuthenticated, loggedInUser, activeTab, setActiveTab]);
+
+  const handleLockedTabClick = (tab: "chat" | "representatives" | "news") => {
+    const featureName = tab === "chat"
+      ? "the AI Assistant"
+      : tab === "representatives"
+        ? "find your representative"
+        : "civic news";
+    setIntendedTab(tab);
+    setLoginPromptFeature(featureName);
+    setShowLoginPrompt(true);
+  };
+
+  const handleTabClick = (tab: "chat" | "services" | "representatives" | "news" | "admin") => {
+    if (tab === "admin") {
+      setActiveTab("admin");
+      return;
+    }
+    if (!isAuthenticated && tab !== "services") {
+      handleLockedTabClick(tab);
+      return;
+    }
+    setActiveTab(tab);
+  };
+
+  const canAccess = (tab: string) => {
+    if (tab === "admin") return adminCheck === true;
+    if (tab === "services") return true;
+    return isAuthenticated;
+  };
 
   if (loggedInUser === undefined) {
     return (
@@ -243,77 +278,49 @@ function Content({
     );
   }
 
-  const publicTabs = ["services", "representatives", "news"] as const;
-  const allTabs = isAuthenticated
-    ? (["chat", "services", "representatives", "news"] as const)
-    : publicTabs;
-
-  if (!isAuthenticated && (activeTab === "chat" || activeTab === "admin")) {
-    setActiveTab("services");
-  }
-
   if (activeTab === "admin") {
-    if (!isAuthenticated) return null;
+    if (adminCheck !== true) return null;
     return (
       <div className="max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
         <ErrorBoundary name="AdminDashboard">
-          <AdminDashboard />
+          <AdminDashboard onBack={() => setActiveTab("chat")} />
         </ErrorBoundary>
       </div>
     );
   }
+
+  const allTabs = ["services", "chat", "representatives", "news"] as const;
 
   return (
     <div className="max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
       {isAuthenticated && (
         <div className="mb-6">
           <h2 className="text-2xl font-bold tracking-tight mb-1">
-            Welcome back, {loggedInUser.email?.split("@")[0] || "Citizen"}!
+            {t("welcomeBack", { name: loggedInUser.email?.split("@")[0] || "Citizen" })}
           </h2>
           <p className="text-muted-foreground">
-            What do you want to do today — ask the AI, browse services, or find
-            officials?
+            {t("welcomePrompt")}
           </p>
         </div>
       )}
 
-      {!isAuthenticated && activeTab === "services" && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass-card p-6 mb-6 text-center"
-        >
-          <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-3">
-            <span className="text-white font-bold text-lg">SL</span>
-          </div>
-          <h2 className="text-2xl font-bold mb-1">SaloneHub</h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            Sierra Leone civic portal — browse services and officials freely.
-            Sign in for AI chat assistance.
-          </p>
-          <button
-            onClick={() => setActiveTab("chat")}
-            className="btn-primary text-sm"
-          >
-            Sign in to use AI Assistant
-          </button>
-        </motion.div>
-      )}
 
-      {/* Navigation Tabs */}
+
+      {/* Navigation Tabs - always all 4 */}
       <div className="glass-card p-1.5 mb-4 sm:mb-6 flex gap-1 overflow-x-auto no-scrollbar" role="tablist" aria-label="Main navigation">
         {allTabs.map((tab) => {
           const label =
-            tab === "chat" ? "🤖 " + t("chat.title")
-            : tab === "services" ? "📋 " + t("services")
+            tab === "services" ? "📋 " + t("services")
+            : tab === "chat" ? "🤖 " + t("chat.title")
             : tab === "representatives" ? "👥 " + t("officials")
             : "📰 " + t("news");
+          const isLocked = !isAuthenticated && tab !== "services";
           return (
             <button
               key={tab}
               role="tab"
               aria-selected={activeTab === tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => handleTabClick(tab)}
               className={cn(
                 "flex-1 min-w-0 rounded-xl px-2 sm:px-4 py-2 text-xs sm:text-sm font-semibold smooth-transition",
                 activeTab === tab
@@ -321,33 +328,81 @@ function Content({
                   : "hover:bg-white/50 dark:hover:bg-white/5 text-muted-foreground",
               )}
             >
-              {label}
+              {label}{isLocked ? " 🔒" : ""}
             </button>
           );
         })}
       </div>
 
-      {/* Tab Content */}
+      {/* Tab Content - guarded by canAccess */}
       <div className="animate-fade-in">
-        {isAuthenticated && (
-          <ErrorBoundary name="ChatInterface">
-            {activeTab === "chat" && <ChatInterface />}
-          </ErrorBoundary>
-        )}
-        {activeTab !== "chat" && (
+        {!canAccess(activeTab) && activeTab !== "admin" ? (
+          <div className="text-center py-12">
+            <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <span className="text-white font-bold text-lg">🔒</span>
+            </div>
+            <h3 className="text-xl font-bold mb-2">Sign In Required</h3>
+            <p className="text-muted-foreground mb-4">
+              Please sign in to access this feature.
+            </p>
+            <button
+              onClick={() => handleLockedTabClick(activeTab as "chat" | "representatives" | "news")}
+              className="btn-primary"
+            >
+              Sign In
+            </button>
+          </div>
+        ) : (
           <>
-            <ErrorBoundary name="ServiceDirectory">
-              {activeTab === "services" && <ServiceDirectory />}
-            </ErrorBoundary>
-            <ErrorBoundary name="RepresentativeFinder">
-              {activeTab === "representatives" && <RepresentativeFinder />}
-            </ErrorBoundary>
-            <ErrorBoundary name="NewsSection">
-              {activeTab === "news" && <NewsSection />}
-            </ErrorBoundary>
+            {activeTab === "services" && (
+              <ErrorBoundary name="ServiceDirectory">
+                <ServiceDirectory
+                  isAuthenticated={isAuthenticated}
+                  onLoginPrompt={(feature) => {
+                    setIntendedTab("services");
+                    setLoginPromptFeature(feature);
+                    setShowLoginPrompt(true);
+                  }}
+                />
+              </ErrorBoundary>
+            )}
+            {activeTab === "chat" && (
+              <ErrorBoundary name="ChatInterface">
+                <ChatInterface />
+              </ErrorBoundary>
+            )}
+            {activeTab === "representatives" && (
+              <ErrorBoundary name="RepresentativeFinder">
+                <RepresentativeFinder />
+              </ErrorBoundary>
+            )}
+            {activeTab === "news" && (
+              <ErrorBoundary name="NewsSection">
+                <NewsSection />
+              </ErrorBoundary>
+            )}
           </>
         )}
       </div>
+
+      <LoginPromptModal
+        isOpen={showLoginPrompt}
+        onClose={() => {
+          setShowLoginPrompt(false);
+          setIntendedTab(null);
+        }}
+        featureName={loginPromptFeature}
+        onSignIn={() => {
+          setShowLoginPrompt(false);
+          setShowAuthModal(true);
+        }}
+      />
+
+      <Modal open={showAuthModal} onOpenChange={setShowAuthModal} title="Sign In">
+        <SignInForm onSuccess={() => {
+          setShowAuthModal(false);
+        }} />
+      </Modal>
     </div>
   );
 }

@@ -1,10 +1,36 @@
 {
   "welcome": "Welcome",
   "chat": {
-    "title": "AI Assistant",
-    "placeholder": "Ask about government services..."
+    "title": "SaloneHub AI Assistant",
+    "subtitle": "Ask about requirements, fees, processing time, and where to go.",
+    "placeholder": "Ask about government services...",
+    "send": "Send"
   },
   "services": "Services",
   "officials": "Officials",
-  "news": "News"
+  "news": "News",
+  "hero": {
+    "title": "SaloneHub",
+    "subtitle": "Sierra Leone civic portal — browse services and officials freely. Sign in for AI chat assistance.",
+    "signIn": "Sign in to use AI Assistant"
+  },
+  "welcomeBack": "Welcome back, {name}!",
+  "welcomePrompt": "What do you want to do today — ask the AI, browse services, or find officials?",
+  "chatGreeting": "Welcome to SaloneHub AI!",
+  "chatSuggestions": "Try one of these:",
+  "chatSuggestion1": "\"How do I apply for a passport?\"",
+  "chatSuggestion2": "\"What are the fees for business registration?\"",
+  "chatSuggestion3": "\"Where can I get a driver's license in Bo?\"",
+  "tour": {
+    "title": "Welcome to SaloneHub",
+    "whatYouCanDo": "What you can do here",
+    "aiAssistant": "Ask the AI assistant about requirements, fees, and where to go.",
+    "browseServices": "Browse government services with filters.",
+    "findOfficials": "Find officials and contact details by district.",
+    "proTips": "Pro tips",
+    "themeToggle": "Use the theme button to cycle Light → Dark → Auto.",
+    "hoverEffects": "Click a tab — cards have hover lift, blur, and subtle motion.",
+    "letsGo": "Let's go",
+    "maybeLater": "Maybe later"
+  }
 }

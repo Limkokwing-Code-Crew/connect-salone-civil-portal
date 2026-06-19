@@ -1,74 +1,18 @@
 import { useMemo, useState } from "react";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
 
 type NewsCategory = "Government" | "Health" | "Education" | "Transport" | "Public Notice";
 
-type NewsItem = {
-  id: string;
-  title: string;
-  summary: string;
-  category: NewsCategory;
-  date: string; // ISO
-  source?: string;
-  href?: string;
-};
-
-const SAMPLE_NEWS: NewsItem[] = [
-  {
-    id: "n1",
-    title: "Public Service Announcement: Updated working hours",
-    summary:
-      "Selected public offices will operate extended hours on weekdays to reduce queue times for citizens.",
-    category: "Public Notice",
-    date: "2025-12-10",
-    source: "SaloneHub",
-  },
-  {
-    id: "n2",
-    title: "New digital appointment pilot (Freetown)",
-    summary:
-      "A pilot program is launching to let citizens book appointments for high-demand services online.",
-    category: "Government",
-    date: "2025-12-06",
-    source: "SaloneHub",
-  },
-  {
-    id: "n3",
-    title: "Health advisory: Harmattan season precautions",
-    summary:
-      "Tips for protecting vulnerable groups during dusty conditions, including masks, hydration, and clinic hotlines.",
-    category: "Health",
-    date: "2025-11-29",
-    source: "SaloneHub",
-  },
-  {
-    id: "n4",
-    title: "Education: Scholarship application timeline",
-    summary:
-      "A reminder to prepare documents early—ID, transcripts, and reference letters—to avoid last-minute delays.",
-    category: "Education",
-    date: "2025-11-21",
-    source: "SaloneHub",
-  },
-  {
-    id: "n5",
-    title: "Transport notice: Vehicle registration guidance",
-    summary:
-      "Quick checklist of required documents and the typical processing timeline for vehicle registration.",
-    category: "Transport",
-    date: "2025-11-15",
-    source: "SaloneHub",
-  },
-];
-
-function formatDate(iso: string) {
+function formatDate(ts: number) {
   try {
-    return new Date(iso).toLocaleDateString(undefined, {
+    return new Date(ts).toLocaleDateString(undefined, {
       year: "numeric",
       month: "short",
       day: "numeric",
     });
   } catch {
-    return iso;
+    return String(ts);
   }
 }
 
@@ -76,9 +20,12 @@ export function NewsSection() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<"" | NewsCategory>("");
 
+  const allNews = useQuery(api.news.list, {});
+
   const items = useMemo(() => {
+    if (!allNews) return [];
     const q = query.trim().toLowerCase();
-    return SAMPLE_NEWS.filter((n) => {
+    return allNews.filter((n) => {
       const matchesCategory = !category || n.category === category;
       const matchesQuery =
         !q ||
@@ -87,7 +34,7 @@ export function NewsSection() {
         n.category.toLowerCase().includes(q);
       return matchesCategory && matchesQuery;
     });
-  }, [query, category]);
+  }, [query, category, allNews]);
 
   return (
     <div className="space-y-6">
@@ -125,13 +72,14 @@ export function NewsSection() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {items.map((n) => (
-          <article key={n.id} className="glass-card card-hover p-6">
+          <article key={n._id} className="glass-card card-hover p-6">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <h4 className="text-lg font-bold tracking-tight truncate">{n.title}</h4>
                 <div className="mt-2 flex flex-wrap gap-2">
                   <span className="pill">📰 {n.category}</span>
-                  <span className="pill">📅 {formatDate(n.date)}</span>
+                  <span className="pill">📅 {formatDate(n.publishedAt)}</span>
+                  {n.type === "auto" && <span className="pill bg-blue-500/20 text-blue-400">auto</span>}
                 </div>
               </div>
             </div>
@@ -140,7 +88,7 @@ export function NewsSection() {
 
             <div className="mt-4 flex items-center justify-between gap-3">
               <div className="text-xs text-muted-foreground">
-                Source: <span className="font-medium text-foreground/80">{n.source ?? "—"}</span>
+                Source: <span className="font-medium text-foreground/80">{n.source ?? "SaloneHub"}</span>
               </div>
 
               {n.href ? (
@@ -157,7 +105,13 @@ export function NewsSection() {
         ))}
       </div>
 
-      {items.length === 0 && (
+      {!allNews && (
+        <div className="flex justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+        </div>
+      )}
+
+      {items.length === 0 && allNews && (
         <div className="glass-card card-hover p-8 text-center">
           <div className="text-4xl mb-3">🔎</div>
           <div className="text-lg font-bold tracking-tight">No news found</div>
@@ -167,10 +121,6 @@ export function NewsSection() {
         </div>
       )}
 
-      <div className="glass-surface rounded-2xl p-4 text-sm text-muted-foreground">
-        <span className="font-semibold text-foreground/90">Note:</span> This is a starter news
-        feed. If you want, I can connect it to Convex so admins can publish announcements.
-      </div>
     </div>
   );
 }

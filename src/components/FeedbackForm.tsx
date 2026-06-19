@@ -29,7 +29,7 @@ export function FeedbackForm({ relatedEntityType, relatedEntityId }: FeedbackFor
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    submitFeedback({
+    void submitFeedback({
       name: name || "Anonymous",
       email: email || undefined,
       category,
