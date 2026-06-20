@@ -1,16 +1,15 @@
 import { useQuery } from "convex/react";
 import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { api } from "../convex/_generated/api";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LoginPromptModal } from "@/components/LoginPromptModal";
-import { SignInForm } from "./SignInForm";
 import { SignOutButton } from "./SignOutButton";
 import { Toaster } from "sonner";
 import { useTranslation } from "react-i18next";
 import { LiquidBackground } from "@/components/LiquidBackground";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Modal } from "@/components/Modal";
 import { Footer } from "@/components/Footer";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
 import { MobileMenu } from "./components/MobileMenu";
@@ -221,18 +220,9 @@ function Content({
   const adminCheck = useQuery(api.admin.isAdmin);
   const isAuthenticated = loggedInUser !== undefined && loggedInUser !== null;
 
+  const navigate = useNavigate();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [loginPromptFeature, setLoginPromptFeature] = useState("");
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [intendedTab, setIntendedTab] = useState<"chat" | "representatives" | "news" | "services" | null>(null);
-
-  // Redirect to intended tab after successful login
-  useEffect(() => {
-    if (isAuthenticated && intendedTab) {
-      setActiveTab(intendedTab);
-      setIntendedTab(null);
-    }
-  }, [isAuthenticated, intendedTab, setActiveTab]);
 
   // Redirect locked initial tabs to services for guests
   useEffect(() => {
@@ -247,7 +237,6 @@ function Content({
       : tab === "representatives"
         ? "find your representative"
         : "civic news";
-    setIntendedTab(tab);
     setLoginPromptFeature(featureName);
     setShowLoginPrompt(true);
   };
@@ -387,22 +376,13 @@ function Content({
 
       <LoginPromptModal
         isOpen={showLoginPrompt}
-        onClose={() => {
-          setShowLoginPrompt(false);
-          setIntendedTab(null);
-        }}
+        onClose={() => setShowLoginPrompt(false)}
         featureName={loginPromptFeature}
         onSignIn={() => {
           setShowLoginPrompt(false);
-          setShowAuthModal(true);
+          void navigate("/login");
         }}
       />
-
-      <Modal open={showAuthModal} onOpenChange={setShowAuthModal} title="Sign In">
-        <SignInForm onSuccess={() => {
-          setShowAuthModal(false);
-        }} />
-      </Modal>
     </div>
   );
 }
