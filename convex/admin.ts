@@ -92,9 +92,9 @@ export const seedUsers = action({
     }
 
     const testUsers = [
-      { email: "admin@salonehub.sl", password: "admin123", name: "Admin" },
-      { email: "alice@test.com", password: "test123", name: "Alice" },
-      { email: "bob@test.com", password: "test123", name: "Bob" },
+      { email: "admin@salonehub.sl", password: "admin1234", name: "Admin" },
+      { email: "alice@test.com", password: "test1234", name: "Alice" },
+      { email: "bob@test.com", password: "test1234", name: "Bob" },
     ];
 
     const results: {
