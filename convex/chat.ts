@@ -2,6 +2,7 @@ import { action, mutation, query } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { api } from "./_generated/api";
+import OpenAI from "openai";
 
 // Fallback responses when OpenAI is not available
 function getFallbackResponse(message: string): string {
@@ -110,7 +111,6 @@ export const sendMessage = action({
     }
 
     // Get AI response using Groq (free alternative to OpenAI)
-    const OpenAI = (await import("openai")).default;
     const openai = new OpenAI({
       baseURL: "https://api.groq.com/openai/v1",
       apiKey: process.env.GROQ_API_KEY || process.env.OPENAI_API_KEY,
@@ -246,19 +246,22 @@ export const getChatHistory = query({
 export const getRecentMessages = query({
   args: { sessionId: v.string(), since: v.number() },
   handler: async (ctx, args) => {
-    const messages = await ctx.db
+    return await ctx.db
       .query("chatMessages")
       .withIndex("by_session", (q) => q.eq("sessionId", args.sessionId))
+      .filter((q) => q.gte(q.field("timestamp"), args.since))
       .order("desc")
       .collect();
-    return messages.filter((m) => m.timestamp >= args.since);
   },
 });
 
 export const getGlobalMessageCount = query({
   args: { since: v.number() },
   handler: async (ctx, args) => {
-    const all = await ctx.db.query("chatMessages").order("desc").collect();
-    return all.filter((m) => m.timestamp >= args.since).length;
+    const recent = await ctx.db
+      .query("chatMessages")
+      .withIndex("by_timestamp", (q) => q.gte("timestamp", args.since))
+      .collect();
+    return recent.length;
   },
 });

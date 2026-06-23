@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useAction, useQuery } from "convex/react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 
 export function ChatInterface() {
@@ -38,9 +39,13 @@ export function ChatInterface() {
     if (!text.trim() || isLoading) return;
     setMessage("");
     setIsLoading(true);
-    void sendMessage({ message: text.trim(), sessionId }).finally(() => {
-      setIsLoading(false);
-    });
+    sendMessage({ message: text.trim(), sessionId })
+      .catch((err) => {
+        toast.error(err instanceof Error ? err.message : "Failed to send message");
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
 
   const handleSubmit = (e: React.FormEvent) => {

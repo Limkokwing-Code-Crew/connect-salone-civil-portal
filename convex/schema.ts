@@ -62,7 +62,8 @@ const applicationTables = {
     timestamp: v.number(),
   })
     .index("by_session", ["sessionId"])
-    .index("by_user", ["userId"]),
+    .index("by_user", ["userId"])
+    .index("by_timestamp", ["timestamp"]),
 
   admins: defineTable({
     userId: v.id("users"),

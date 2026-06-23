@@ -1,5 +1,5 @@
 import { useQuery } from "convex/react";
-import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { api } from "../convex/_generated/api";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -16,30 +16,11 @@ import { LanguageSwitcher } from "./components/LanguageSwitcher";
 import { MobileMenu } from "./components/MobileMenu";
 import { useTheme } from "@/hooks/useTheme";
 import { cn } from "@/lib/utils";
-
-const AdminDashboard = lazy(() =>
-  import("@/components/AdminDashboard").then((m) => ({
-    default: m.AdminDashboard,
-  })),
-);
-const ChatInterface = lazy(() =>
-  import("./components/ChatInterface").then((m) => ({
-    default: m.ChatInterface,
-  })),
-);
-const ServiceDirectory = lazy(() =>
-  import("./components/ServiceDirectory").then((m) => ({
-    default: m.ServiceDirectory,
-  })),
-);
-const RepresentativeFinder = lazy(() =>
-  import("./components/RepresentativeFinder").then((m) => ({
-    default: m.RepresentativeFinder,
-  })),
-);
-const NewsSection = lazy(() =>
-  import("@/components/NewsSection").then((m) => ({ default: m.NewsSection })),
-);
+import { AdminDashboard } from "@/components/AdminDashboard";
+import { ChatInterface } from "./components/ChatInterface";
+import { ServiceDirectory } from "./components/ServiceDirectory";
+import { RepresentativeFinder } from "./components/RepresentativeFinder";
+import { NewsSection } from "@/components/NewsSection";
 
 const TOUR_SEEN_KEY = "salone_hub_tour_seen";
 
@@ -190,12 +171,6 @@ function MainApp() {
     setActiveTab(tab);
   };
 
-  const canAccess = (tab: string) => {
-    if (tab === "admin") return adminCheck === true;
-    if (tab === "services") return true;
-    return isAuthenticated;
-  };
-
   if (loggedInUser === undefined) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -321,114 +296,93 @@ function MainApp() {
       </header>
 
       <main className="flex-1">
-        <Suspense
-          fallback={
-            <div className="flex justify-center items-center min-h-[50vh]">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+        <div className="max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+          {isAuthenticated && (
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold tracking-tight mb-1">
+                {t("welcomeBack", { name: loggedInUser.name || loggedInUser.email?.split("@")[0] || "Citizen" })}
+              </h2>
+              <p className="text-muted-foreground">
+                {t("welcomePrompt")}
+              </p>
             </div>
-          }
-        >
-          <div className="max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
-            {isAuthenticated && (
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold tracking-tight mb-1">
-                  {t("welcomeBack", { name: loggedInUser.name || loggedInUser.email?.split("@")[0] || "Citizen" })}
-                </h2>
-                <p className="text-muted-foreground">
-                  {t("welcomePrompt")}
-                </p>
-              </div>
-            )}
+          )}
 
-            {/* Navigation Tabs - always all 4 */}
-            <div className="glass-card p-1.5 mb-4 sm:mb-6 flex gap-1 overflow-x-auto no-scrollbar" role="tablist" aria-label="Main navigation">
-              {allTabs.map((tab) => {
-                const label =
-                  tab === "services" ? "📋 " + t("services")
-                  : tab === "chat" ? "🤖 " + t("chat.title")
-                  : tab === "representatives" ? "👥 " + t("officials")
-                  : "📰 " + t("news");
-                const isLocked = !isAuthenticated && tab !== "services";
-                return (
-                  <button
-                    key={tab}
-                    role="tab"
-                    aria-selected={activeTab === tab}
-                    onClick={() => handleTabClick(tab)}
-                    className={cn(
-                      "flex-1 min-w-0 rounded-xl px-2 sm:px-4 py-2 text-xs sm:text-sm font-semibold smooth-transition",
-                      activeTab === tab
-                        ? "bg-white/70 dark:bg-white/10 shadow-sm"
-                        : "hover:bg-white/50 dark:hover:bg-white/5 text-muted-foreground",
-                    )}
-                  >
-                    {label}{isLocked ? " 🔒" : ""}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Tab Content - guarded by canAccess */}
-            <div className="animate-fade-in">
-              {!canAccess(activeTab) && activeTab !== "admin" ? (
-                <div className="text-center py-12">
-                  <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <span className="text-white font-bold text-lg">🔒</span>
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">Sign In Required</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Please sign in to access this feature.
-                  </p>
-                  <button
-                    onClick={() => handleLockedTabClick(activeTab as "chat" | "representatives" | "news")}
-                    className="btn-primary"
-                  >
-                    Sign In
-                  </button>
-                </div>
-              ) : (
-                <>
-                  {activeTab === "services" && (
-                    <ErrorBoundary name="ServiceDirectory">
-                      <ServiceDirectory
-                        isAuthenticated={isAuthenticated}
-                        onLoginPrompt={(feature) => {
-                          setLoginPromptFeature(feature);
-                          setShowLoginPrompt(true);
-                        }}
-                      />
-                    </ErrorBoundary>
+          {/* Navigation Tabs - always all 4 */}
+          <div className="glass-card p-1.5 mb-4 sm:mb-6 flex gap-1 overflow-x-auto no-scrollbar" role="tablist" aria-label="Main navigation">
+            {allTabs.map((tab) => {
+              const label =
+                tab === "services" ? "📋 " + t("services")
+                : tab === "chat" ? "🤖 " + t("chat.title")
+                : tab === "representatives" ? "👥 " + t("officials")
+                : "📰 " + t("news");
+              const isLocked = !isAuthenticated && tab !== "services";
+              return (
+                <button
+                  key={tab}
+                  role="tab"
+                  aria-selected={activeTab === tab}
+                  onClick={() => handleTabClick(tab)}
+                  className={cn(
+                    "flex-1 min-w-0 rounded-xl px-2 sm:px-4 py-2 text-xs sm:text-sm font-semibold smooth-transition",
+                    activeTab === tab
+                      ? "bg-white/70 dark:bg-white/10 shadow-sm"
+                      : "hover:bg-white/50 dark:hover:bg-white/5 text-muted-foreground",
                   )}
-                  {activeTab === "chat" && (
-                    <ErrorBoundary name="ChatInterface">
-                      <ChatInterface />
-                    </ErrorBoundary>
-                  )}
-                  {activeTab === "representatives" && (
-                    <ErrorBoundary name="RepresentativeFinder">
-                      <RepresentativeFinder />
-                    </ErrorBoundary>
-                  )}
-                  {activeTab === "news" && (
-                    <ErrorBoundary name="NewsSection">
-                      <NewsSection />
-                    </ErrorBoundary>
-                  )}
-                </>
-              )}
-            </div>
-
-            <LoginPromptModal
-              isOpen={showLoginPrompt}
-              onClose={() => setShowLoginPrompt(false)}
-              featureName={loginPromptFeature}
-              onSignIn={() => {
-                setShowLoginPrompt(false);
-                window.location.href = "/login";
-              }}
-            />
+                >
+                  {label}{isLocked ? " 🔒" : ""}
+                </button>
+              );
+            })}
           </div>
-        </Suspense>
+
+          {/* Tab Content - all mounted, hidden via CSS for instant switching */}
+          <div className="animate-fade-in">
+            {/* Services - always mounted (public) */}
+            <div className={cn(activeTab !== "services" && "hidden")}>
+              <ErrorBoundary name="ServiceDirectory">
+                <ServiceDirectory
+                  isAuthenticated={isAuthenticated}
+                  onLoginPrompt={(feature) => {
+                    setLoginPromptFeature(feature);
+                    setShowLoginPrompt(true);
+                  }}
+                />
+              </ErrorBoundary>
+            </div>
+
+            {/* Auth-required tabs - mounted only when authenticated */}
+            {isAuthenticated && (
+              <>
+                <div className={cn(activeTab !== "chat" && "hidden")}>
+                  <ErrorBoundary name="ChatInterface">
+                    <ChatInterface />
+                  </ErrorBoundary>
+                </div>
+                <div className={cn(activeTab !== "representatives" && "hidden")}>
+                  <ErrorBoundary name="RepresentativeFinder">
+                    <RepresentativeFinder />
+                  </ErrorBoundary>
+                </div>
+                <div className={cn(activeTab !== "news" && "hidden")}>
+                  <ErrorBoundary name="NewsSection">
+                    <NewsSection />
+                  </ErrorBoundary>
+                </div>
+              </>
+            )}
+          </div>
+
+          <LoginPromptModal
+            isOpen={showLoginPrompt}
+            onClose={() => setShowLoginPrompt(false)}
+            featureName={loginPromptFeature}
+            onSignIn={() => {
+              setShowLoginPrompt(false);
+              window.location.href = "/login";
+            }}
+          />
+        </div>
       </main>
 
       <Footer />

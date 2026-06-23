@@ -346,3 +346,78 @@ export const seed = mutation({
     return { message: "Database seeded successfully" };
   },
 });
+
+export const seedNews = mutation({
+  handler: async (ctx) => {
+    const existing = await ctx.db.query("news").first();
+    if (existing) return { message: "News already seeded" };
+
+    const now = Date.now();
+    const news = [
+      {
+        title: "Voter Registration Now Open Nationwide",
+        summary: "ECSL announces open voter registration across all districts. Citizens 18+ can register at any ECSL center with a National ID or birth certificate.",
+        category: "Government",
+        type: "auto",
+        source: "ECSL",
+        href: "https://ec.gov.sl",
+        publishedAt: now - 86400000 * 1,
+        createdAt: now - 86400000 * 1,
+      },
+      {
+        title: "New Business Registration Fee Schedule Released",
+        summary: "CAC releases updated fee schedule for business registration. Standard registration now NLe 450. Online application portal available.",
+        category: "Government",
+        type: "auto",
+        source: "CAC",
+        href: "https://cac.gov.sl",
+        publishedAt: now - 86400000 * 3,
+        createdAt: now - 86400000 * 3,
+      },
+      {
+        title: "Passport Renewal Processing Time Reduced",
+        summary: "Immigration Department reduces passport renewal processing time from 14 to 10 working days. Online appointment booking now available.",
+        category: "Government",
+        type: "auto",
+        source: "Immigration",
+        href: "https://immigration.gov.sl",
+        publishedAt: now - 86400000 * 5,
+        createdAt: now - 86400000 * 5,
+      },
+      {
+        title: "National ID Cards Available at New NCRA Centers",
+        summary: "NCRA opens new enrollment centers in Kailahun, Pujehun, and Kambia. Citizens can now apply for NIN at over 20 locations nationwide.",
+        category: "Public Notice",
+        type: "auto",
+        source: "NCRA",
+        publishedAt: now - 86400000 * 7,
+        createdAt: now - 86400000 * 7,
+      },
+      {
+        title: "Driver's License Testing Schedule Updated",
+        summary: "SLRSA announces updated driving test schedule. Written tests now available in Krio. Medical certificate required for all applicants.",
+        category: "Transport",
+        type: "auto",
+        source: "SLRSA",
+        publishedAt: now - 86400000 * 10,
+        createdAt: now - 86400000 * 10,
+      },
+      {
+        title: "Tax Identification Number (TIN) Registration Free",
+        summary: "NRA reminds the public that TIN registration is free of charge. Report any unofficial fees or charges to NRA hotline immediately.",
+        category: "Public Notice",
+        type: "auto",
+        source: "NRA",
+        href: "https://nra.gov.sl",
+        publishedAt: now - 86400000 * 14,
+        createdAt: now - 86400000 * 14,
+      },
+    ];
+
+    for (const item of news) {
+      await ctx.db.insert("news", item);
+    }
+
+    return { message: `Seeded ${news.length} news items` };
+  },
+});
