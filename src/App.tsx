@@ -332,7 +332,7 @@ function MainApp() {
             {isAuthenticated && (
               <div className="mb-6">
                 <h2 className="text-2xl font-bold tracking-tight mb-1">
-                  {t("welcomeBack", { name: loggedInUser.email?.split("@")[0] || "Citizen" })}
+                  {t("welcomeBack", { name: loggedInUser.name || loggedInUser.email?.split("@")[0] || "Citizen" })}
                 </h2>
                 <p className="text-muted-foreground">
                   {t("welcomePrompt")}

@@ -34,17 +34,23 @@ export function ChatInterface() {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!message.trim() || isLoading) return;
-
-    const userMessage = message.trim();
+  const send = (text: string) => {
+    if (!text.trim() || isLoading) return;
     setMessage("");
     setIsLoading(true);
-
-    void sendMessage({ message: userMessage, sessionId }).finally(() => {
+    void sendMessage({ message: text.trim(), sessionId }).finally(() => {
       setIsLoading(false);
     });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    send(message);
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    const text = suggestion.replace(/^"|"$/g, "").trim();
+    if (text) send(text);
   };
 
   return (
@@ -66,15 +72,27 @@ export function ChatInterface() {
             </p>
             <p className="text-sm">{t("chatSuggestions")}</p>
             <div className="mt-4 space-y-2 text-left max-w-md mx-auto">
-              <div className="glass-surface rounded-xl p-3 text-sm">
+              <button
+                type="button"
+                onClick={() => handleSuggestionClick(t("chatSuggestion1"))}
+                className="glass-surface rounded-xl p-3 text-sm w-full text-left cursor-pointer hover:bg-white/60 dark:hover:bg-white/10 smooth-transition"
+              >
                 {t("chatSuggestion1")}
-              </div>
-              <div className="glass-surface rounded-xl p-3 text-sm">
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSuggestionClick(t("chatSuggestion2"))}
+                className="glass-surface rounded-xl p-3 text-sm w-full text-left cursor-pointer hover:bg-white/60 dark:hover:bg-white/10 smooth-transition"
+              >
                 {t("chatSuggestion2")}
-              </div>
-              <div className="glass-surface rounded-xl p-3 text-sm">
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSuggestionClick(t("chatSuggestion3"))}
+                className="glass-surface rounded-xl p-3 text-sm w-full text-left cursor-pointer hover:bg-white/60 dark:hover:bg-white/10 smooth-transition"
+              >
                 {t("chatSuggestion3")}
-              </div>
+              </button>
             </div>
           </div>
         )}
