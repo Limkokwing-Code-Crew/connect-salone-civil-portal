@@ -2,7 +2,6 @@ import { action, mutation, query } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { api } from "./_generated/api";
-import OpenAI from "openai";
 
 // Fallback responses when OpenAI is not available
 function getFallbackResponse(message: string): string {
@@ -111,6 +110,7 @@ export const sendMessage = action({
     }
 
     // Get AI response using Groq (free alternative to OpenAI)
+    const OpenAI = (await import("openai")).default;
     const openai = new OpenAI({
       baseURL: "https://api.groq.com/openai/v1",
       apiKey: process.env.GROQ_API_KEY || process.env.OPENAI_API_KEY,
