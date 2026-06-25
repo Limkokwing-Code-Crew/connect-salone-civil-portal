@@ -2,6 +2,7 @@ import { query, mutation, action } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
 import { getAuthUserId, createAccount } from "@convex-dev/auth/server";
 import { api } from "./_generated/api";
+import { Doc } from "./_generated/dataModel";
 
 export const isAdmin = query({
   handler: async (ctx) => {
@@ -160,5 +161,70 @@ export const seedUsers = action({
     }
 
     return { results };
+  },
+});
+
+export const cleanupDuplicates = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new ConvexError("Unauthenticated");
+    const callerAdmin = await ctx.db
+      .query("admins")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .first();
+    if (!callerAdmin) throw new ConvexError("Unauthorized: Admin only");
+
+    const results: { table: string; removed: number }[] = [];
+
+    // Services — duplicates by name (case-insensitive)
+    const services = await ctx.db.query("services").collect();
+    const seenServices = new Map<string, string>();
+    let removedServices = 0;
+    for (const s of services) {
+      const key = s.name.toLowerCase().trim();
+      const existing = seenServices.get(key);
+      if (existing) {
+        await ctx.db.delete(s._id);
+        removedServices++;
+      } else {
+        seenServices.set(key, s._id);
+      }
+    }
+    results.push({ table: "services", removed: removedServices });
+
+    // Representatives — duplicates by name + district
+    const reps = await ctx.db.query("representatives").collect();
+    const seenReps = new Map<string, string>();
+    let removedReps = 0;
+    for (const r of reps) {
+      const key = `${r.name.toLowerCase().trim()}|${r.district.toLowerCase().trim()}`;
+      const existing = seenReps.get(key);
+      if (existing) {
+        await ctx.db.delete(r._id);
+        removedReps++;
+      } else {
+        seenReps.set(key, r._id);
+      }
+    }
+    results.push({ table: "representatives", removed: removedReps });
+
+    // News — duplicates by title (case-insensitive)
+    const news = await ctx.db.query("news").collect();
+    const seenNews = new Map<string, string>();
+    let removedNews = 0;
+    for (const n of news) {
+      const key = n.title.toLowerCase().trim();
+      const existing = seenNews.get(key);
+      if (existing) {
+        await ctx.db.delete(n._id);
+        removedNews++;
+      } else {
+        seenNews.set(key, n._id);
+      }
+    }
+    results.push({ table: "news", removed: removedNews });
+
+    return results;
   },
 });

@@ -164,6 +164,16 @@ export function SignInForm({ onSuccess }: SignInFormProps) {
             });
           }}
         >
+          {flow === "signUp" && (
+            <input
+              className="auth-input-field"
+              type="text"
+              name="name"
+              placeholder="Full Name"
+              autoComplete="off"
+              required
+            />
+          )}
           <input
             className="auth-input-field"
             type="email"
