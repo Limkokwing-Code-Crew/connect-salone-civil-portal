@@ -147,13 +147,13 @@ export function SignInForm({ onSuccess }: SignInFormProps) {
               setSubmitting(false);
               const msg = error.message ?? "";
               let toastTitle = "";
-              if (/wrong password|invalid password|invalid email|invalid credentials/i.test(msg)) {
+              if (/invalidsecret|wrong password|invalid password|invalid email|invalid credentials/i.test(msg)) {
                 toastTitle = "Invalid email or password. Please try again.";
-              } else if (/no account|not found|doesn't exist/i.test(msg)) {
+              } else if (/invalidaccountid|no account|not found|doesn't exist/i.test(msg)) {
                 toastTitle = "No account found with that email. Did you mean to sign up?";
               } else if (/already exists/i.test(msg)) {
                 toastTitle = "An account with this email already exists. Did you mean to sign in?";
-              } else if (/rate limit|too many/i.test(msg)) {
+              } else if (/rate limit|too many|toomanyfailedattempts/i.test(msg)) {
                 toastTitle = "Too many attempts. Please wait a moment and try again.";
               } else {
                 toastTitle = msg || (flow === "signIn"
